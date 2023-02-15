@@ -11,6 +11,7 @@ return [
         'pt' => 'Portuguese',
         'tr' => 'Türkçe',
         'vi' => 'Vietnamese',
+	'de' => 'German'
     ],
     'rtl-languages' => [ 'ar' ],
     'timezones' => [
