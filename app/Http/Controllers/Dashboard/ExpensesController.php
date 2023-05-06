@@ -8,13 +8,17 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Crud\CashFlowHistoryCrud;
-use App\Crud\ExpenseCrud;
-use App\Http\Controllers\DashboardController;
 use App\Models\Expense;
-use App\Services\ExpenseService;
+
+use App\Crud\ExpenseCrud;
+
 use App\Services\Options;
 use Illuminate\Http\Request;
+
+use App\Services\ExpenseService;
+use App\Crud\CashFlowHistoryCrud;
+use App\Http\Controllers\DashboardController;
+
 
 class ExpensesController extends DashboardController
 {

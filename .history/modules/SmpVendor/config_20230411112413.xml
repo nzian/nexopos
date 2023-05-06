@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<module>
+  <namespace>SmpVendor</namespace>
+  <version>4.8.16</version>
+  <author>DevNzian</author>
+  <name>Shawns Market Vendors</name>
+  <description>Shawns Flea Market needs pos users as vendor and assign some attribute like commission and monthly charge and vendor unique Id. And based on their sell he need a report of sales commissions and monthly charge deductions</description>
+</module>

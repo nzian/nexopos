@@ -1,0 +1,26 @@
+<?php
+
+namespace Modules\SmpVendor;
+
+use Illuminate\Support\Facades\Event;
+use App\Services\Module;
+use App\Classes\Hook;
+class SmpVendorModule extends Module
+{
+    public function __construct()
+    {
+        parent::__construct(__FILE__);
+
+        Hook::addFilter('ns-dashboard-menus', function ($menus) {
+            $menus    =   array_insert_after($menus, '', [
+                'foobar'    =>    [
+                    'label'   =>    __('Foobar'),
+                    'href'    =>    url('/url/to/ui')
+                ]
+            ]);
+
+            return $menus; // <= do not forget
+        });
+    }
+
+}

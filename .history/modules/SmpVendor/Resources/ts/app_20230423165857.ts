@@ -1,0 +1,1 @@
+const smpVendorSalesReport         =  () => import( './pages/smp-vendor-sales-report.vue' );
