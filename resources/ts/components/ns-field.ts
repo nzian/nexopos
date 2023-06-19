@@ -61,6 +61,7 @@ const nsField       =   Vue.component( 'ns-field', {
     },
     props: [ 'field' ],
     methods: {
+
         addOption( option ) {
             if( this.field.type === 'select' ) {
                 this.field.options.forEach( option => option.selected = false );

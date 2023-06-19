@@ -14,35 +14,75 @@
                 <div id="cart-toolbox" class="w-full p-2 border-b">
                     <div class="border rounded overflow-hidden">
                         <div class="flex flex-wrap">
+                            <div class="ns-button success">
+                                <button @click="goToDashboard()" class="rounded shadow flex-shrink-0 h-10 flex items-center bg-green-500 text-white hover:bg-green-600 border-r border-green-600 px-2 py-1 mx-1 text-sm">
+                                    <i class="mr-1 text-xl las la-tachometer-alt"></i>
+                                    <span>{{ __( 'Dashboard' ) }}</span>
+                                </button>
+                            </div>
                             <div class="ns-button">
-                                <button @click="openNotePopup()" class="w-full h-10 px-3 outline-none">
+                                <button @click="openNotePopup()" class="w-full h-10 px-3 outline-none mr-1">
                                     <i class="las la-comment"></i>
                                     <span class="ml-1 hidden md:inline-block">{{ __( 'Comments' ) }}</span>
                                 </button>
                             </div>
-                            <hr class="h-10" style="width: 1px">
+                            <div @click="holdOrder()" id="hold-button" class="rounded shadow flex-shrink-0 px-2 py-1 mr-1 flex items-center cursor-pointer justify-center bg-blue-500 text-white border-r hover:bg-blue-600 border-blue-600">
+                            <i class="mr-1 text-xl lg:text-xl las la-pause"></i> 
+                            <span>{{ __( 'Hold' ) }}</span>
+                            </div>
+                            <div class="ns-button success" v-if="order.tax_type == 'inclusive'">
+                                <button @click="taxOn()" class="rounded shadow flex-shrink-0 h-10 flex items-center bg-green-500 text-white hover:bg-green-600 border-r border-green-600 px-2 py-1 mr-1 text-sm">
+                                    <i class="las la-balance-scale-left"></i>
+                                    <span>{{ __( 'Tax On' ) }}</span>
+                                </button>
+                            </div>
+                            
+                            <div class="ns-button error" v-if="order.tax_type == 'exclusive'">
+                                <button @click="taxOff()" class="rounded shadow flex-shrink-0 h-10 flex bg-red-500 text-white border-box-edge hover:bg-red-600 items-center mr-1 px-2 py-1 text-sm">
+                                    <i class="las la-balance-scale-left"></i>
+                                    <span>{{ __( 'Tax Off' ) }}</span>
+                                </button>
+                            </div>
+                            <div @click="voidOngoingOrder( order )" id="void-button" class="rounded shadow flex-shrink-0 px-2 py-1 flex items-center font-bold cursor-pointer justify-center bg-red-500 mr-1 text-white border-box-edge hover:bg-red-600">
+                                <i class="mr-1 las la-trash"></i> 
+                                <span>{{ __( 'Void' ) }}</span>
+                            </div>
+                           
+                            <div class="ns-button error">
+                                <button @click="reset()" class="rounded shadow flex-shrink-0 h-10 flex bg-red-500 text-white border-box-edge hover:bg-red-600 items-center px-2 py-1 text-sm">
+                                    <i class="mr-1 las la-eraser"></i>
+                                    <span>{{ __( 'Reset' ) }}</span>
+                                </button>
+                            </div>
+
+                            <!--<div @click="openDiscountPopup( order, 'cart' )" id="discount-button" class="flex-shrink-0 w-1/4 flex items-center font-bold cursor-pointer justify-center bg-white border-r border-box-edge hover:bg-indigo-100 flex-auto text-gray-700">
+                                <i class="mr-2 text-2xl lg:text-xl las la-percent"></i> 
+                                <span class="text-lg hidden md:inline lg:text-2xl">{{ __( 'Discount' ) }}</span>
+                            </div>-->
+                           
+                            <!--<hr class="h-10" style="width: 1px">
                             <div class="ns-button">
                                 <button @click="selectTaxGroup()" class="w-full h-10 px-3 outline-none flex items-center">
                                     <i class="las la-balance-scale-left"></i>
                                     <span class="ml-1 hidden md:inline-block">{{ __( 'Taxes' ) }}</span>
                                     <span v-if="order.taxes && order.taxes.length > 0" class="ml-1 rounded-full flex items-center justify-center h-6 w-6 bg-info-secondary text-white">{{ order.taxes.length }}</span>
                                 </button>
-                            </div>
-                            <hr class="h-10" style="width: 1px">
+                            </div>-->
+                            <!--<hr class="h-10" style="width: 1px">
                             <div class="ns-button">
                                 <button @click="selectCoupon()" class="w-full h-10 px-3 outline-none flex items-center">
                                     <i class="las la-tags"></i>
                                     <span class="ml-1 hidden md:inline-block">{{ __( 'Coupons' ) }}</span>
                                     <span v-if="order.coupons && order.coupons.length > 0" class="ml-1 rounded-full flex items-center justify-center h-6 w-6 bg-info-secondary text-white">{{ order.coupons.length }}</span>
                                 </button>
-                            </div>
-                            <hr class="h-10" style="width: 1px">
+                            </div>-->
+                            <!--<hr class="h-10" style="width: 1px">
                             <div class="ns-button">
                                 <button @click="defineOrderSettings()" class="w-full h-10 px-3 outline-none flex items-center">
                                     <i class="las la-tools"></i>
                                     <span class="ml-1 hidden md:inline-block">{{ __( 'Settings' ) }}</span>
                                 </button>
-                            </div>
+                            </div>-->
                             <hr class="h-10" style="width: 1px">
                             <div class="ns-button" v-if="options.ns_pos_quick_product === 'yes'">
                                 <button @click="openAddQuickProduct()" class="w-full h-10 px-3 outline-none flex items-center">
@@ -51,6 +91,7 @@
                                 </button>
                             </div>
                             <hr class="h-10" style="width: 1px">
+                           
                         </div>
                     </div>
                 </div>
@@ -73,7 +114,7 @@
                         <div class="w-full lg:w-4/6 p-2 border border-l-0 border-t-0">
                             <div class="flex justify-between product-details mb-1">
                                 <h3 class="font-semibold">
-                                    {{ product.name }} &mdash; {{ product.unit_name }}
+                                   {{product.vendor_name}} {{ product.name }} 
                                 </h3>
                                 <div class="-mx-1 flex product-options">
                                     <div class="px-1"> 
@@ -235,18 +276,7 @@
                         <i class="mr-2 text-2xl lg:text-xl las la-cash-register"></i> 
                         <span class="text-lg hidden md:inline lg:text-2xl">{{ __( 'Pay' ) }}</span>
                     </div>
-                    <div @click="holdOrder()" id="hold-button" class="flex-shrink-0 w-1/4 flex items-center font-bold cursor-pointer justify-center bg-blue-500 text-white border-r hover:bg-blue-600 border-blue-600 flex-auto">
-                        <i class="mr-2 text-2xl lg:text-xl las la-pause"></i> 
-                        <span class="text-lg hidden md:inline lg:text-2xl">{{ __( 'Hold' ) }}</span>
-                    </div>
-                    <div @click="openDiscountPopup( order, 'cart' )" id="discount-button" class="flex-shrink-0 w-1/4 flex items-center font-bold cursor-pointer justify-center bg-white border-r border-box-edge hover:bg-indigo-100 flex-auto text-gray-700">
-                        <i class="mr-2 text-2xl lg:text-xl las la-percent"></i> 
-                        <span class="text-lg hidden md:inline lg:text-2xl">{{ __( 'Discount' ) }}</span>
-                    </div>
-                    <div @click="voidOngoingOrder( order )" id="void-button" class="flex-shrink-0 w-1/4 flex items-center font-bold cursor-pointer justify-center bg-red-500 text-white border-box-edge hover:bg-red-600 flex-auto">
-                        <i class="mr-2 text-2xl lg:text-xl las la-trash"></i> 
-                        <span class="text-lg hidden md:inline lg:text-2xl">{{ __( 'Void' ) }}</span>
-                    </div>
+                  
                 </div>
             </div>
         </div>
@@ -256,6 +286,7 @@
 import { Popup } from '@/libraries/popup';
 import PosPaymentPopup from '@/popups/ns-pos-payment-popup';
 import PosConfirmPopup from '@/popups/ns-pos-confirm-popup';
+import nsPosConfirmPopupVue from '@/popups/ns-pos-confirm-popup.vue';
 import nsPosQuantityPopupVue from '@/popups/ns-pos-quantity-popup.vue';
 import { ProductQuantityPromise } from "./queues/products/product-quantity";
 import nsPosDiscountPopupVue from '@/popups/ns-pos-discount-popup.vue';
@@ -314,7 +345,6 @@ export default {
     mounted() {
         this.optionsSubscriber  =   POS.options.subscribe( options => {
             this.options    =   options;
-            console.log( options );
         });
         this.typeSubscribe  =   POS.types.subscribe( types => this.types = types );
         this.orderSubscribe  =   POS.order.subscribe( order => {
@@ -324,7 +354,6 @@ export default {
             this.products = products;
             this.$forceUpdate();
         });
-
         this.settingsSubscribe  =   POS.settings.subscribe( settings => {
             this.settings   =   settings;
         });
@@ -408,6 +437,22 @@ export default {
         __,
 
         switchTo,
+
+        goToDashboard() {
+            return document.location = POS.settings.getValue()[ 'urls' ][ 'dashboard_url' ];
+        },
+
+         reset() {
+            Popup.show( nsPosConfirmPopupVue, {
+                title: __( 'Confirm Your Action' ),
+                message: __( 'The current order will be cleared. But not deleted if it\'s persistent. Would you like to proceed ?' ),
+                onAction: ( action ) => {
+                    if ( action ) {
+                        POS.reset();
+                    }
+                }
+            });
+        },
 
         openAddQuickProduct() {
             const promise   =   new Promise( ( resolve, reject ) => {
@@ -532,7 +577,7 @@ export default {
                     const tax_type          =   this.order.tax_type;
                     Popup.show( nsPosTaxPopupVue, { resolve, reject, taxes, tax_group_id, tax_type, activeTab })
                 });
-
+                
                 const order             =   { ...this.order, ...response };
                 
                 POS.order.next( order );
@@ -541,6 +586,20 @@ export default {
             } catch( exception ) {
                 console.log( exception );
             }
+        },
+
+        taxOff() {
+            const order = {...this.order, ...{'tax_group_id': 1, 'tax_type': 'inclusive'}};
+            //this.order.tax_type = 'inclusive';
+            POS.order.next(order);
+            POS.refreshCart();
+        },
+
+        taxOn() {
+            const order = {...this.order, ...{'tax_group_id': 1, 'tax_type': 'exclusive'}};
+            //this.order.tax_type = 'inclusive';
+            POS.order.next(order);
+            POS.refreshCart();
         },
 
         openTaxSummary() {

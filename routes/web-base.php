@@ -4,6 +4,8 @@ use App\Events\WebRoutesLoadedEvent;
 use App\Http\Controllers\Dashboard\CrudController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\SetupController;
+use App\Http\Controllers\AuthController;
+
 use App\Http\Controllers\UpdateController;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CheckApplicationHealthMiddleware;
@@ -17,7 +19,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([ 'web' ])->group( function() {
-    Route::get('/', [ HomeController::class, 'welcome' ])->name( 'ns.welcome' );
+
+Route::get('/', [ AuthController::class, 'signIn' ])->name('ns.welcome');
+
 });
 
 require dirname( __FILE__ ) . '/intermediate.php';
@@ -69,4 +73,4 @@ Route::middleware([
     });
 });
 
-include dirname( __FILE__ ) . '/debug.php';
+include dirname(__FILE__) . '/debug.php';

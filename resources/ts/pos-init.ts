@@ -1220,7 +1220,6 @@ export class POS {
         const products  = this.products.getValue();
         let order       = this.order.getValue();
         let usePriceWithTax  =   this.options.getValue().ns_pos_price_with_tax;
-
         const productTotal = products
             .filter( product => product.product_type !== 'dynamic' )
             .map(product => usePriceWithTax === 'yes' ? product.total_price_with_tax : product.total_price_without_tax );
@@ -1391,7 +1390,7 @@ export class POS {
             name: product.name,
             discount_type: 'percentage',
             discount: 0,
-            discount_percentage: 0,
+            discount_percentage: product.discount || 0,
             product_type: product.product_type || 'product',
             rate: product.rate || 0,
             quantity: product.quantity || 0,
@@ -1409,7 +1408,8 @@ export class POS {
             mode: product.mode || 'normal',
             $original: product.$original || (() => product),
             $quantities: product.$quantities || undefined,
-            vendor_id: product.vendor_id || undefined
+            vendor_id: product.vendor_id || undefined,
+            vendor_name: product.vendor_name || undefined,
         };
 
         /**

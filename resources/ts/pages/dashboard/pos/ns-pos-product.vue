@@ -79,6 +79,27 @@ export default {
           .subscribe();
       }
       let product = this.validation.extractFields(fields);
+      product.vendor_id = product.vendor_id.toUpperCase();
+      let validVendorId = this.vendors.filter(vendor => vendor.vendor_id === product.vendor_id)[0];
+      if(validVendorId === undefined) {
+        return nsSnackBar
+          .error(__("Unable to proceed." + " " + product.vendor_id + " is not a valid vendor id"))
+          .subscribe();
+      }
+      if(parseFloat(product.unit_price) <= 0) {
+        return nsSnackBar
+          .error(__("Unable to proceed. Product price " + " " + product.unit_price + " should be greater than 0."))
+          .subscribe();
+      }
+      if(parseInt(product.discount) <= 0) {
+        product.discount = 0;
+      }
+      if(product.discount > 100) {
+        product.discount = 100;
+      }
+      if(parseInt(product.quantity) <= 0) {
+        product.quantity = 1;
+      }
       //console.log(product);
       product.$original = () => {
         return {
@@ -102,7 +123,9 @@ export default {
         product.price_with_tax = product.unit_price;
         product.price_without_tax = product.unit_price;
         product.tax_value = 0;
-        product.vendor_id = product.vendor_id;
+        product.vendor_id = validVendorId.id;
+        product.vendor_name = validVendorId.vendor_id;
+        product.discount = product.discount;
       } else {
         product.unit_name = __("N/A");
         product.unit_price = 0;
@@ -117,7 +140,6 @@ export default {
        * tax before adding that to the cart.
        */
       product = POS.computeProductTax(product);
-
       POS.addToCart(product);
       this.resetForm();
       this.buildForm();
@@ -156,14 +178,14 @@ export default {
               });
             }
 
-            if (field.name === "vendor_id") {
+           /* if (field.name === "vendor_id") {
               field.options = result[2].map(vendor => {
                 return {
                   label: vendor.vendor_id,
                   value: vendor.id
                 };
               });
-            }
+            }*/
           });
 
           this.buildForm();
@@ -181,6 +203,15 @@ export default {
         }
         if (field.name == "unit_price") {
           field.value = undefined;
+        }
+        if (field.name == "discount") {
+          field.value = 0;
+        }
+        if (field.name == "vendor_id") {
+          field.value = undefined;
+        }
+        if (field.name == "quantity") {
+          field.value = 1;
         }
       });
     },
@@ -202,6 +233,7 @@ export default {
     this.visibleSectionSubscriber = POS.visibleSection.subscribe(section => {
       this.visibleSection = section;
     });
+    this.loadData();
   },
   destroyed() {
     this.visibleSectionSubscriber.unsubscribe();
@@ -217,22 +249,21 @@ export default {
       validation: new FormValidation(),
       fields: [
         {
-          label: __("Vendor Name"),
+          label: __("Vendor"),
           name: "vendor_id",
-          type: "select",
-          options: [
-            // ...
-          ],
+          type: "text",
+          ref: "vendorIdRef",
           description: __("Choose a vendor for the product."),
           show(form) {
             return form.product_type === "product";
-          }
+          },
+          validation: "required"
         },
         {
-          label: __("Name"),
+          label: __("Description"),
           name: "name",
           type: "text",
-          description: __("Provide a unique name for the product."),
+          description: __("Provide a unique description for the product."),
           validation: "required"
         },
 
@@ -249,14 +280,36 @@ export default {
           }
         },
         {
-          label: __("Unit Price"),
+          label: __("Price"),
           name: "unit_price",
-          type: "text",
-          description: __("Define what is the sale price of the item."),
-          validation: "",
+          type: "number",
+          description: __("Define what is the sale price of the product."),
+          validation: "required",
           show(form) {
             return form.product_type === "product";
           }
+        },
+        {
+          label: __("Quantity"),
+          name: "quantity",
+          type: "number",
+          value: 1,
+          description: __("Set the quantity of the product."),
+          validation: "required|integer",
+          show(form) {
+            return form.product_type === "product";
+          }
+        },        
+        {
+           label: __("Discount"),
+           name: "discount",
+           type: "number",
+           value: 0,
+           description: __("Set the discount of the product."),
+           validation: "required|min:0|max:100",
+           show(form) {
+             return form.product_type === "product";
+           }
         },
         {
           label: __("Unit"),
@@ -267,21 +320,13 @@ export default {
           ],
           description: __("Assign a unit to the product."),
           validation: "required",
+          value: 3,
+          hidden: true,
           show(form) {
             return form.product_type === "product";
           }
         },
-        {
-          label: __("Quantity"),
-          name: "quantity",
-          type: "text",
-          value: 1,
-          description: __("Set the quantity of the product."),
-          validation: "",
-          show(form) {
-            return form.product_type === "product";
-          }
-        },
+      
         {
           label: __("Tax Type"),
           name: "tax_type",
@@ -300,6 +345,8 @@ export default {
               value: "exclusive"
             }
           ],
+          value: "exclusive",
+          hidden: true,
           description: __("Define what is tax type of the item."),
           show(form) {
             return form.product_type === "product";
@@ -315,8 +362,9 @@ export default {
           description: __(
             "Choose the tax group that should apply to the item."
           ),
+          value: 1,
+          hidden: true,
           show(form) {
-            return false;
             return form.product_type === "product";
           }
         },
@@ -324,6 +372,7 @@ export default {
           label: __("Product Type"),
           name: "product_type",
           type: "select",
+          hidden: true,
           description: __("Define the product type."),
           options: [
             {
@@ -335,14 +384,12 @@ export default {
               value: "dynamic"
             }
           ],
-          value: "product"
+          value: "product",
+          
           //validation: 'required',
         }
       ]
     };
-  },
-  mounted() {
-    this.loadData();
   }
 };
 </script>

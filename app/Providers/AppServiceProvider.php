@@ -228,6 +228,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen( function( ModulesBootedEvent $event ) {
             $this->loadConfiguration();
         });
+
+       
     }
 
     /**

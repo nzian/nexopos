@@ -26,7 +26,7 @@ const nsInput      =   Vue.component( 'ns-input', {
     },
     props: [ 'placeholder', 'leading', 'type', 'field' ],
     template: `
-    <div class="flex flex-col mb-2 flex-auto ns-input">
+    <div class="flex flex-col mb-2 flex-auto ns-input" :class="field.hidden ? 'hidden' : ''">
         <label :for="field.name" :class="hasError ? 'has-error' : 'is-pristine'" class="block leading-5 font-medium"><slot></slot></label>
         <div :class="hasError ? 'has-error' : 'is-pristine'" class="mt-1 relative overflow-hidden border-2 rounded-md focus:shadow-sm mb-2">
             <div v-if="leading" class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -34,7 +34,8 @@ const nsInput      =   Vue.component( 'ns-input', {
                 {{ leading }}
                 </span>
             </div>
-            <input 
+            <input
+                :ref="field.ref"
                 :disabled="field.disabled" 
                 v-model="field.value" 
                 @blur="$emit( 'blur', this )" 

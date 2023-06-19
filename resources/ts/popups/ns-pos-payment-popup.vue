@@ -215,9 +215,9 @@ export default {
                     <button v-if="order.tendered >= order.total" @click="submitOrder()" class="flex items-center justify-center w-1/3 text-2xl flex-auto h-12 ns-submit-button font-bold">
                         <span class="text-sm">{{ __( 'Submit Payment' ) }}</span>
                     </button>
-                    <button v-if="order.tendered < order.total" @click="submitOrder({ payment_status: 'unpaid' })" class="flex items-center justify-center w-1/3 text-2xl flex-auto h-12 ns-layaway-button font-bold">
+                    <!--<button v-if="order.tendered < order.total" @click="submitOrder({ payment_status: 'unpaid' })" class="flex items-center justify-center w-1/3 text-2xl flex-auto h-12 ns-layaway-button font-bold">
                         <span class="text-sm">{{ __( 'Layaway' ) }}</span>
-                    </button>
+                    </button>-->
                     <button @click="showPayment = true" class="w-1/3 flex ns-payment-button text-2xl flex-auto h-12 items-center justify-center font-bold">
                         <span class="text-sm mr-1">{{ __( 'Payment List' ) }}</span>
                         <span class="px-2 rounded-full h-6 w-6 text-xs flex items-center justify-center ns-label">{{ order.payments.length }}</span>
@@ -228,9 +228,9 @@ export default {
                         <ns-button v-if="order.tendered >= order.total" @click="submitOrder()" :type="order.tendered >= order.total ? 'success' : 'info'">
                             <span ><i class="las la-cash-register"></i> {{ __( 'Submit Payment' ) }}</span>
                         </ns-button>
-                        <ns-button v-if="order.tendered < order.total" @click="submitOrder({ payment_status: 'unpaid' })" :type="order.tendered >= order.total ? 'success' : 'info'">
+                        <!--<ns-button v-if="order.tendered < order.total" @click="submitOrder({ payment_status: 'unpaid' })" :type="order.tendered >= order.total ? 'success' : 'info'">
                             <span><i class="las la-bookmark"></i> {{ __( 'Layaway' ) }} &mdash; {{ expectedPayment | currency }}</span>
-                        </ns-button>
+                        </ns-button>-->
                     </div>
                 </div>
             </div>

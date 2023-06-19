@@ -28,7 +28,7 @@ const nsSelect      =   Vue.component( 'ns-select', {
     },
     methods: { __ },
     template: `
-    <div class="flex flex-col flex-auto ns-select">
+    <div class="flex flex-col flex-auto ns-select" :class="field.hidden ? 'hidden' : ''">
         <label :for="field.name" :class="hasError ? 'has-error' : 'is-pristine'" class="block leading-5 font-medium"><slot></slot></label>
         <div :class="hasError ? 'has-error' : 'is-pristine'" class="border-2 mt-1 relative rounded-md shadow-sm mb-2 overflow-hidden">
             <select :disabled="field.disabled ? field.disabled : false" @change="$emit( 'change', $event )" :name="field.name" v-model="field.value" :class="inputClass" class="form-input block w-full pl-7 pr-12 sm:text-sm sm:leading-5 h-10 appearance-none">

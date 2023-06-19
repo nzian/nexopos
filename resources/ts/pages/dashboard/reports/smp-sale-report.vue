@@ -126,7 +126,7 @@ export default {
               this.filterUser.options = [
                 {
                   label: __("All Vendors"),
-                  value: ""
+                  value: "",
                 },
                 ...this.users.map(user => {
                   return {
@@ -187,7 +187,7 @@ export default {
           .error(__("Unable to proceed. The current time range is not valid."))
           .subscribe();
       }
-
+      console.log('hello');
       nsHttpClient
         .post("/api/nexopos/v4/smp/reports/vendor-sale-report", {
           startDate: this.startDate,

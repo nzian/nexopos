@@ -1,12 +1,12 @@
 <template>
     <div class="h-full flex-auto flex flex-col" id="pos-container">
-        <div class="flex overflow-hidden flex-shrink-0 px-2 pt-2">
+        <!--<div class="flex overflow-hidden flex-shrink-0 px-2 pt-2">
             <div class="-mx-2 flex overflow-x-auto pb-1">
                 <div class="header-buttons flex px-2 flex-shrink-0" :key="index" v-for="(component,index) of buttons">
                     <component :is="component"></component>
                 </div>
             </div>
-        </div>
+        </div>-->
         <div class="flex-auto overflow-hidden flex p-2">
             <div class="flex flex-auto overflow-hidden -m-2">
                 <div :class="visibleSection === 'both' ? 'w-1/2' : 'w-full'" class="flex overflow-hidden p-2" v-if="[ 'both', 'cart' ].includes( visibleSection )">

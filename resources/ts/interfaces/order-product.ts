@@ -16,7 +16,8 @@ export interface OrderProduct extends Product {
     product_type: 'product' | 'dynamic';
     rate?: number;
     quantity: number;
-    vendor_id: number;
+    vendor_id: number | undefined;
+    vendor_name: string | undefined;
     product?: Product;
     $quantities?: () => ProductUnitQuantity,
     

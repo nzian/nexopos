@@ -6,6 +6,7 @@ use App\Events\ModulesBootedEvent;
 use App\Events\ModulesLoadedEvent;
 use App\Services\ModulesService;
 use Illuminate\Support\ServiceProvider;
+use App\Classes\Hook;
 
 class ModulesServiceProvider extends ServiceProvider
 {
@@ -70,5 +71,12 @@ class ModulesServiceProvider extends ServiceProvider
 
             return $this->modules;
         });
+
+         /**
+        * remove footer signature
+        */
+       Hook::addFilter( 'ns-footer-signature', function( $signature ) {
+        return __( 'You\'re using SPARKY POS' );
+    });
     }
 }
