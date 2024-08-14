@@ -9,11 +9,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 
+/**
+ * @deprecated
+ */
 class ProcessCashRegisterHistoryJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, NsSerialize;
+    use Dispatchable, InteractsWithQueue, NsSerialize, Queueable;
 
     /**
      * Create a new job instance.
@@ -36,7 +38,7 @@ class ProcessCashRegisterHistoryJob implements ShouldQueue
          * If the payment status changed from
          * supported payment status to a "Paid" status.
          */
-        if ( $this->order->register_id !== null && $this->order->payment_status === Order::PAYMENT_PAID ) {
+        if ( $this->order->register_id !== null ) {
             $cashRegistersService->recordCashRegisterHistorySale(
                 order: $this->order
             );

@@ -60,7 +60,7 @@ class TransactionHistory extends NsModel
     /**
      * Unique account identifier for cash register cash in.
      */
-    const ACCOUNT_REGISTER_CASHIN = '004';
+    const ACCOUNT_REGISTER_CASHING = '004';
 
     /**
      * Unique account identifier for cash register cash out.
@@ -97,21 +97,21 @@ class TransactionHistory extends NsModel
      */
     const ACCOUNT_EQUITY = '011';
 
-    public $fillable    =   [
-        'transaction_id', 
-        'operation', 
-        'transaction_account_id', 
-        'procurement_id', 
-        'order_refund_id', 
-        'order_refund_product_id', 
-        'order_id', 
-        'order_product_id', 
-        'register_history_id', 
-        'customer_account_history_id', 
-        'name', 
-        'type', 
-        'status', 
-        'value', 
+    public $fillable = [
+        'transaction_id',
+        'operation',
+        'transaction_account_id',
+        'procurement_id',
+        'order_refund_id',
+        'order_refund_product_id',
+        'order_id',
+        'order_product_id',
+        'register_history_id',
+        'customer_account_history_id',
+        'name',
+        'type',
+        'status',
+        'value',
         'trigger_date',
     ];
 

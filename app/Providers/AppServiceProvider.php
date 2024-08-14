@@ -28,6 +28,7 @@ use App\Services\ProductService;
 use App\Services\ProviderService;
 use App\Services\ReportService;
 use App\Services\ResetService;
+use App\Services\SetupService;
 use App\Services\TaxService;
 use App\Services\TransactionService;
 use App\Services\UnitService;
@@ -73,7 +74,8 @@ class AppServiceProvider extends ServiceProvider
                 app()->make( ProductCategoryService::class ),
                 app()->make( ProductService::class ),
                 app()->make( ProcurementService::class ),
-                app()->make( OrdersService::class )
+                app()->make( OrdersService::class ),
+                app()->make( SetupService::class )
             );
         } );
 
@@ -82,7 +84,7 @@ class AppServiceProvider extends ServiceProvider
             $options = app()->make( Options::class );
             $timeZone = $options->get( 'ns_datetime_timezone', 'Europe/London' );
 
-            config(['app.timezone' => $timeZone ]);
+            config( ['app.timezone' => $timeZone ] );
             date_default_timezone_set( $timeZone );
 
             return new DateService( 'now', $timeZone );

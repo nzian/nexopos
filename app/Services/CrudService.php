@@ -178,7 +178,7 @@ class CrudService
      * Store relations that should be joined to every
      * request made to the database using the model provided
      */
-    protected $relations    =   [];
+    protected $relations = [];
 
     /**
      * Keeps the table name for the provided model
@@ -1050,7 +1050,7 @@ class CrudService
          * In case nothing handle this crud
          */
         if ( ! class_exists( $crudClass ) ) {
-            throw new Exception( __( 'Unhandled crud resource' ) );
+            throw new Exception( sprintf( __( 'Unhandled crud resource "%s"' ), $crudClass ) );
         }
 
         return new $crudClass;

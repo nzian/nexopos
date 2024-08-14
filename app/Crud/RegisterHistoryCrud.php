@@ -405,9 +405,10 @@ class RegisterHistoryCrud extends CrudService
         ];
     }
 
-    public function getTableFooter(Output $output): Output
+    public function getTableFooter( Output $output ): Output
     {
         $output->addView( 'pages.dashboard.cash-registers.history.footer' );
+
         return $output;
     }
 
@@ -420,7 +421,7 @@ class RegisterHistoryCrud extends CrudService
             case RegisterHistory::ACTION_SALE:
                 $entry->{ '$cssClass' } = 'success border';
                 break;
-            case RegisterHistory::ACTION_CASHIN:
+            case RegisterHistory::ACTION_CASHING:
                 $entry->{ '$cssClass' } = 'success border';
                 break;
             case RegisterHistory::ACTION_ACCOUNT_PAY:
@@ -447,7 +448,7 @@ class RegisterHistoryCrud extends CrudService
             $entry->{ '$cssClass' } = 'error border';
         }
 
-        $entry->action( 
+        $entry->action(
             label: __( 'Details' ),
             identifier: 'view-details',
             type: 'POPUP'

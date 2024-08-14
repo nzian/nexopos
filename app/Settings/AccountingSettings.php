@@ -16,14 +16,14 @@ class AccountingSettings extends SettingsPage
 
     public function __construct()
     {
-        $debitAccounts  =   TransactionAccount::debit()->get()->map( function ( $account ) {
+        $debitAccounts = TransactionAccount::debit()->get()->map( function ( $account ) {
             return [
                 'label' => $account->name,
                 'value' => $account->id,
             ];
         } );
 
-        $creditAccount  =   TransactionAccount::credit()->get()->map( function ( $account ) {
+        $creditAccount = TransactionAccount::credit()->get()->map( function ( $account ) {
             return [
                 'label' => $account->name,
                 'value' => $account->id,
@@ -43,19 +43,37 @@ class AccountingSettings extends SettingsPage
                     identifier: 'cash-registers',
                     label: __( 'Cash Register' ),
                     fields: SettingForm::fields(
-                        FormInput::multiselect( 
+                        FormInput::multiselect(
                             label: __( 'Allowed Cash In Account' ),
-                            name: 'ns_accounting_cashin_accounts',
-                            description: __( 'Define on which accounts cashin transactions are allowed' ),
-                            options: $creditAccount,
-                            value: ns()->option->get( 'ns_accounting_cashin_accounts' ),
+                            name: 'ns_accounting_cashing_accounts',
+                            description: __( 'Define on which accounts cashing transactions are allowed' ),
+                            options: $debitAccounts,
+                            value: ns()->option->get( 'ns_accounting_cashing_accounts' ),
                         ),
-                        FormInput::multiselect( 
+                        FormInput::searchSelect(
+                            label: __( 'Default Cash In Account' ),
+                            name: 'ns_accounting_default_cashing_account',
+                            description: __( 'Select the account where cashing transactions will be posted' ),
+                            options: $debitAccounts,
+                            component: 'nsCrudForm',
+                            props: TransactionAccountCrud::getFormConfig(),
+                            value: ns()->option->get( 'ns_accounting_default_cashing_account' ),
+                        ),
+                        FormInput::multiselect(
                             label: __( 'Allowed Cash Out Account' ),
                             name: 'ns_accounting_cashout_accounts',
                             description: __( 'Define on which accounts cashout transactions are allowed' ),
-                            options: $debitAccounts,
+                            options: $creditAccount,
                             value: ns()->option->get( 'ns_accounting_cashout_accounts' ),
+                        ),
+                        FormInput::searchSelect(
+                            label: __( 'Default Cash Out Account' ),
+                            name: 'ns_accounting_default_cashout_account',
+                            description: __( 'Select the account where cash out transactions will be posted' ),
+                            options: $creditAccount,
+                            component: 'nsCrudForm',
+                            props: TransactionAccountCrud::getFormConfig(),
+                            value: ns()->option->get( 'ns_accounting_default_cashout_account' ),
                         ),
                         FormInput::searchSelect(
                             label: __( 'Opening Float Account' ),

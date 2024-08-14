@@ -8,7 +8,7 @@ import { BehaviorSubject } from "rxjs";
 import { Customer } from "./interfaces/customer";
 import { OrderType } from "./interfaces/order-type";
 import { Order } from "./interfaces/order";
-import { nsEvent, nsHooks, nsHttpClient, nsNotice, nsSnackBar } from "./bootstrap";
+import { nsHooks, nsHttpClient, nsNotice, nsSnackBar } from "./bootstrap";
 import { PaymentType } from "./interfaces/payment-type";
 import { Payment } from "./interfaces/payment";
 import { Responsive } from "./libraries/responsive";
@@ -25,6 +25,7 @@ import Print from "./libraries/print";
 import Tax from "./libraries/tax";
 import * as math from "mathjs"
 import nsPosLoadingPopupVue from "./popups/ns-pos-loading-popup.vue";
+import { nsAlertPopup, nsConfirmPopup, nsPromptPopup } from "./components/components";
 
 
 /**
@@ -37,10 +38,6 @@ const nsPosOrderTypeButton      = (<any>window).nsPosOrderTypeButton = defineAsy
 const nsPosCustomersButton      = (<any>window).nsPosCustomersButton = defineAsyncComponent( () => import('./pages/dashboard/pos/header-buttons/ns-pos-' + 'customers' + '-button.vue' ) );
 const nsPosResetButton          = (<any>window).nsPosResetButton = defineAsyncComponent( () => import('./pages/dashboard/pos/header-buttons/ns-pos-' + 'reset' + '-button.vue' ) );
 const nsPosCashRegister         = (<any>window).nsPosCashRegister = defineAsyncComponent( () => import('./pages/dashboard/pos/header-buttons/ns-pos-' + 'registers' + '-button.vue' ) );
-const nsAlertPopup              = (<any>window).nsAlertPopup = defineAsyncComponent( () => import('./popups/ns-' + 'alert' + '-popup.vue' ) );
-const nsConfirmPopup            = (<any>window).nsConfirmPopup = defineAsyncComponent( () => import('./popups/ns-pos-' + 'confirm' + '-popup.vue' ) );
-const nsPOSLoadingPopup         = (<any>window).nsPOSLoadingPopup = defineAsyncComponent( () => import('./popups/ns-pos-' + 'loading' + '-popup.vue' ) );
-const nsPromptPopup             = (<any>window).nsPromptPopup = defineAsyncComponent( () => import('./popups/ns-' + 'prompt' + '-popup.vue' ) );
 const nsLayawayPopup            = (<any>window).nsLayawayPopup = defineAsyncComponent( () => import('./popups/ns-pos-' + 'layaway' + '-popup.vue' ) );
 const nsPosShippingPopup        = (<any>window).nsPosShippingPopup = defineAsyncComponent( () => import('./popups/ns-pos-' + 'shipping' + '-popup.vue' ) );
 
@@ -51,9 +48,7 @@ const nsPosShippingPopup        = (<any>window).nsPosShippingPopup = defineAsync
 
 declare const systemOptions;
 declare const systemUrls;
-
-declare const systemOptions;
-declare const systemUrls;
+declare const nsEvent;
 
 export class POS {
     private _cartButtons: BehaviorSubject<{ [key: string]: any }>;
@@ -104,7 +99,6 @@ export class POS {
             tax_value: 0,
             products_exclusive_tax_value: 0,
             products_inclusive_tax_value: 0,
-            products_tax_value: 0,
             total_tax_value: 0,
             shipping_rate: 0,
             shipping_type: undefined,
@@ -611,7 +605,7 @@ export class POS {
                  * order we should then get the real VAT value.
                  */
                 if ( groups[order.tax_group_id] !== undefined ) {
-                    order   =   this.computeOrderTaxGroup( order, groups[order.tax_group_id] );
+                    order   =   <Order>this.computeOrderTaxGroup( order, groups[order.tax_group_id] );
                 }
 
                 return resolve({
@@ -624,7 +618,7 @@ export class POS {
                 nsHttpClient.get(`/api/taxes/groups/${order.tax_group_id}`)
                     .subscribe({
                         next: (tax: any) => {
-                            order   =   this.computeOrderTaxGroup( order, tax );
+                            order   =   <Order>this.computeOrderTaxGroup( order, tax );
     
                             return resolve({
                                 status: 'success',
@@ -655,6 +649,7 @@ export class POS {
 
             return {
                 id: _tax.id,
+                tax_id : _tax.tax_id,
                 name: _tax.name,
                 rate: parseFloat(_tax.rate),
                 tax_value: math.chain(
@@ -664,8 +659,10 @@ export class POS {
         });
 
         if ( tax.taxes.length === 0 ) {
-            return nsSnackBar.error( __( 'The selected tax group doesn\'t have any assigned sub taxes. This might cause wrong figures.' ), __( 'Proceed' ), { duration: false })
+            nsSnackBar.error( __( 'The selected tax group doesn\'t have any assigned sub taxes. This might cause wrong figures.' ), __( 'Proceed' ), { duration: false })
                 .subscribe();
+
+            return;
         }
 
         order.tax_groups = order.tax_groups || [];
@@ -752,7 +749,8 @@ export class POS {
     canProceedAsLaidAway(_order: Order): { status: string, message: string, data: { order: Order } } | any {
         return new Promise(async (resolve, reject) => {
             const minimalPaymentPercent = _order.customer.group.minimal_credit_payment;
-            let expected: any = ((_order.total * minimalPaymentPercent) / 100).toFixed(ns.currency.ns_currency_precision);
+            const firstPart     =   math.chain( _order.total ).multiply( minimalPaymentPercent ).done();
+            let expected: any = math.chain( firstPart ).divide( 100 ).done();
             expected = parseFloat(expected);
 
             /**
@@ -766,7 +764,7 @@ export class POS {
 
                 if (result.order.instalments.length === 0 && result.order.tendered < expected) {
                     const message = __(`Before saving this order, a minimum payment of {amount} is required`).replace('{amount}', nsCurrency(expected));
-                    Popup.show(nsAlertPopup, { title: __('Unable to proceed'), message });
+                    Popup.show( nsAlertPopup, { title: __('Unable to proceed'), message });
                     return reject({ status: 'error', message });
                 } else {
                     const paymentType = this.selectedPaymentType.getValue();
@@ -784,7 +782,7 @@ export class POS {
                          * the waiter and invite him to add the first slice as 
                          * the payment.
                          */
-                        Popup.show(nsConfirmPopup, {
+                        Popup.show( nsConfirmPopup, {
                             title: __(`Initial Payment`),
                             message: __(`In order to proceed, an initial payment of {amount} is required for the selected payment type "{paymentType}". Would you like to proceed ?`)
                                 .replace('{amount}', nsCurrency(firstSlice))
@@ -867,56 +865,65 @@ export class POS {
             }
 
             if (!this._isSubmitting) {
-
-                /**
-                 * @todo do we need to set a new value here
-                 * probably the passed value should be send to the server.
-                 */
-                const method = order.id !== undefined ? 'put' : 'post';
-
                 this._isSubmitting = true;
-
-                /**
-                 * We should allow any module to mutate
-                 * the order before it's submitted.
-                 */
-                nsHooks.doAction('ns-order-before-submit', order );
-
-                return nsHttpClient[method](`/api/orders${order.id !== undefined ? '/' + order.id : ''}`, order)
-                    .subscribe({
-                        next: result => {
-                            resolve(result);
-                            this.reset();
-
-                            /**
-                             * will trigger an acction when
-                             * the order has been successfully submitted
-                             */
-                            nsHooks.doAction('ns-order-submit-successful', result);
-
-                            this._isSubmitting = false;
-
-                            /**
-                             * when all this has been executed, we can play
-                             * a sound if it's enabled
-                             */
-                            const url     =   this.options.getValue().ns_pos_complete_sale_audio;
-                            
-                            if ( url.length > 0 ) {
-                                ( new Audio( url ) ).play();
-                            }
-                        },
-                        error: (error: any) => {
-                            this._isSubmitting = false;
-                            reject(error);
-
-                            nsHooks.doAction('ns-order-submit-failed', error);
-                        }
-                    });
+                return this.proceedSubmitting( order, resolve, reject );
             }
 
             return reject({ status: 'error', message: __('An order is currently being processed.') });
         });
+    }
+
+    /**
+     * Will proceed to submit the order directly
+     * @param order Order
+     * @param resolve resolve callback
+     * @param reject reject callback
+     * @returns Subscription
+     */
+    proceedSubmitting( order, resolve, reject ) {
+        /**
+         * @todo do we need to set a new value here
+         * probably the passed value should be send to the server.
+         */
+        const method = order.id !== undefined ? 'put' : 'post';
+
+        /**
+         * We should allow any module to mutate
+         * the order before it's submitted.
+         */
+        nsHooks.doAction('ns-order-before-submit', order );
+
+        return nsHttpClient[method](`/api/orders${order.id !== undefined ? '/' + order.id : ''}`, order)
+            .subscribe({
+                next: result => {
+                    resolve(result);
+                    this.reset();
+
+                    /**
+                     * will trigger an acction when
+                     * the order has been successfully submitted
+                     */
+                    nsHooks.doAction('ns-order-submit-successful', result);
+
+                    this._isSubmitting = false;
+
+                    /**
+                     * when all this has been executed, we can play
+                     * a sound if it's enabled
+                     */
+                    const url     =   this.options.getValue().ns_pos_complete_sale_audio;
+                    
+                    if ( url.length > 0 ) {
+                        ( new Audio( url ) ).play();
+                    }
+                },
+                error: (error: any) => {
+                    this._isSubmitting = false;
+                    reject(error);
+
+                    nsHooks.doAction('ns-order-submit-failed', error);
+                }
+            });
     }
 
     defineQuantities( product, units = [] ) {
@@ -1393,13 +1400,11 @@ export class POS {
         }
 
         if ( taxType === 'exclusive' ) {
-            order.total     =   +(
-                ( order.subtotal + ( order.shipping ||0) + tax_value ) - order.discount - order.total_coupons
-            ).toFixed( ns.currency.ns_currency_precision );
+            const op1 = math.chain( order.subtotal ).add( order.shipping || 0 ).add( tax_value ).done();
+            order.total     =   math.chain( op1 ).subtract( order.discount ).subtract( order.total_coupons ).done();
         } else {
-            order.total     =   +(
-                ( order.subtotal + ( order.shipping ||0) ) - order.discount - order.total_coupons
-            ).toFixed( ns.currency.ns_currency_precision );
+            const op1 = math.chain( order.subtotal ).add( order.shipping || 0 ).done();
+            order.total     =   math.chain( op1 ).subtract( order.discount ).subtract( order.total_coupons ).done();
         }
 
         this.order.next(order);
@@ -1892,7 +1897,7 @@ export class POS {
                     }
                 });
             } else {
-                Popup.show(nsPromptPopup, {
+                Popup.show( nsPromptPopup, {
                     title: __( 'Void The Order' ),
                     message: __( 'The current order will be void. This will cancel the transaction, but the order won\'t be deleted. Further details about the operation will be tracked on the report. Consider providing the reason of this operation.' ),
                     onAction: (reason) => {

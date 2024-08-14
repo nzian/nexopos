@@ -17,7 +17,8 @@ export class Popup {
 
     constructor( config: {
         primarySelector?: string,
-        popupClass?: string
+        popupClass?: string,
+        closeOnOverlayClick?: boolean,
     } = {} ) {
         this.config             =   Object.assign( this.config, config );
         
@@ -34,7 +35,7 @@ export class Popup {
 
     static show( component, params = {}, config = {}) {
         const popup     =   new Popup( config );
-        return popup.open( component, params );
+        return popup.open( component, params, config );
     }
 
     private hash() {
@@ -60,6 +61,12 @@ export class Popup {
                  * In that situation, we don't need to resolve the default.
                  */
             }
+        } else if ( typeof component.__asyncLoader === 'function' ) {
+            /**
+             * With this, we'll resolve the component
+             * to ensure props can be added to it on runtime.
+             */
+            component = (async () => await component.__asyncLoader())();
         }
 
         const body                          =   document.querySelector( 'body' ).querySelectorAll( 'div' )[0];

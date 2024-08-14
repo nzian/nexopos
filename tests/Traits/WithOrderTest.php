@@ -145,7 +145,7 @@ trait WithOrderTest
             ->whereIn( 'action', RegisterHistory::IN_ACTIONS )
             ->sum( 'value' ) )->toFloat();
 
-        $totalChange    =   ns()->currency->define( RegisterHistory::where( 'register_id', $cashRegister->id )
+        $totalChange = ns()->currency->define( RegisterHistory::where( 'register_id', $cashRegister->id )
             ->where( 'action', RegisterHistory::ACTION_CASH_CHANGE )
             ->sum( 'value' ) )->toFloat();
 
@@ -154,12 +154,12 @@ trait WithOrderTest
          */
         if ( (float) $response[ 'data' ][ 'order' ][ 'tendered' ] > 0 ) {
             $this->assertNotEquals( $cashRegister->balance, $previousValue, __( 'There hasn\'t been any change during the transaction on the cash register balance.' ) );
-            $this->assertEquals( 
-                (float) $cashRegister->balance, 
+            $this->assertEquals(
+                (float) $cashRegister->balance,
                 ns()->currency->define( $totalValue )
                     ->subtractBy( $totalChange )
                     ->toFloat(),
-                __( 'The cash register balance hasn\'t been updated correctly.' ) 
+                __( 'The cash register balance hasn\'t been updated correctly.' )
             );
         }
 
@@ -172,8 +172,8 @@ trait WithOrderTest
 
         if ( $response[ 'data' ][ 'order' ][ 'change' ] > 0 ) {
             $this->assertTrue( $changeHistory instanceof RegisterHistory, __( 'No change history was recorded' ) );
-            $this->assertTrue( 
-                ( float ) $cashRegister->balance === 
+            $this->assertTrue(
+                (float) $cashRegister->balance ===
                 ns()->currency->define( $firstCashRegisterState->balance )
                     ->additionateBy( $response[ 'data' ][ 'order' ][ 'tendered' ] )
                     ->subtractBy( $response[ 'data' ][ 'order' ][ 'change' ] )
@@ -265,7 +265,7 @@ trait WithOrderTest
 
         $totalCashing = RegisterHistory::withRegister( $cashRegister )
             ->from( $opening->created_at )
-            ->action( RegisterHistory::ACTION_CASHIN )->sum( 'value' );
+            ->action( RegisterHistory::ACTION_CASHING )->sum( 'value' );
 
         $totalSales = RegisterHistory::withRegister( $cashRegister )
             ->from( $opening->created_at )
@@ -741,17 +741,19 @@ trait WithOrderTest
          * @var array    $response
          * @var Register $cashRegister
          */
-        
         $order = Order::find( $response[ 'data' ][ 'order' ][ 'id' ] );
         $orderService->makeOrderSinglePayment( [
             'identifier' => OrderPayment::PAYMENT_CASH,
             'value' => $response[ 'data' ][ 'order' ][ 'total' ],
+            'register_id' => $order->register_id,
         ], $order );
 
         /**
          * Making assertions
          */
-        $cashRegisterHistory = RegisterHistory::where( 'register_id', $cashRegister->id )->orderBy( 'id', 'desc' )->first();
+        $cashRegisterHistory = RegisterHistory::where( 'register_id', $cashRegister->id )
+            ->where( 'action', RegisterHistory::ACTION_SALE )
+            ->orderBy( 'id', 'desc' )->first();
 
         $this->assertTrue(
             ns()->currency->define( $cashRegisterHistory->value )->toFloat() === $order->total,
@@ -834,7 +836,12 @@ trait WithOrderTest
      */
     private function disburseCashFromRegister( Register $cashRegister, CashRegistersService $cashRegistersService )
     {
-        return $cashRegistersService->cashOut( $cashRegister, $cashRegister->balance / 1.5, __( 'Test disbursing the cash register' ) );
+        return $cashRegistersService->cashOut(
+            register: $cashRegister,
+            amount: $cashRegister->balance / 1.5,
+            transaction_account_id: ns()->option->get( 'ns_accounting_default_cashout_account', 0 ),
+            description: __( 'Test disbursing the cash register' )
+        );
     }
 
     /**
@@ -845,7 +852,12 @@ trait WithOrderTest
      */
     private function cashInOnRegister( Register $cashRegister, CashRegistersService $cashRegistersService )
     {
-        return $cashRegistersService->cashIn( $cashRegister, ( $cashRegister->balance / 2 ), __( 'Test disbursing the cash register' ) );
+        return $cashRegistersService->cashIng(
+            register: $cashRegister,
+            amount: ( $cashRegister->balance / 2 ),
+            transaction_account_id: ns()->option->get( 'ns_accounting_default_cashing_account' ),
+            description: __( 'Test disbursing the cash register' )
+        );
     }
 
     protected function attemptCreateCustomerOrder()
@@ -1435,7 +1447,7 @@ trait WithOrderTest
          * dispose of all variables defined
          * on this method
          */
-        unset( 
+        unset(
             $currency,
             $faker,
             $taxService,
@@ -1525,7 +1537,7 @@ trait WithOrderTest
         $response->assertStatus( 200 );
         $json = json_decode( $response->getContent(), true );
 
-        $order = $json[ 'data' ][ 'order' ];        
+        $order = $json[ 'data' ][ 'order' ];
 
         $this->assertTrue( $order[ 'products' ][0][ 'mode' ] === 'retail', 'Failed to assert the first product price mode is "retail"' );
         $this->assertTrue( $order[ 'products' ][1][ 'mode' ] === 'normal', 'Failed to assert the second product price mode is "normal"' );
@@ -1596,12 +1608,12 @@ trait WithOrderTest
         } );
 
         /**
-         * we need to make sure is only one transaction created for the 
+         * we need to make sure is only one transaction created for the
          * order that was later on marked as a paid order.
          */
-        $this->assertTrue( 
-            TransactionHistory::where( 'order_id', $order[ 'id' ] )->where( 'operation', 'credit' )->count() == 1, 
-            __( 'More transaction was created for the same order' ) 
+        $this->assertTrue(
+            TransactionHistory::where( 'order_id', $order[ 'id' ] )->where( 'operation', 'credit' )->count() == 1,
+            __( 'More transaction was created for the same order' )
         );
 
         /**
@@ -1747,9 +1759,9 @@ trait WithOrderTest
         return $response->json();
     }
 
-    protected function attemptCreateHoldOrder()
+    protected function attemptCreateHoldOrder( $product = null )
     {
-        $product = Product::withStockEnabled()
+        $product = $product !== null ? $product : Product::withStockEnabled()
             ->notGrouped()
             ->with( 'unit_quantities' )
             ->first();

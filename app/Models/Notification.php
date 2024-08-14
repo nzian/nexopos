@@ -2,7 +2,11 @@
 
 namespace App\Models;
 
+use App\Events\NotificationCreatedEvent;
+use App\Events\NotificationDeletedEvent;
+use App\Events\NotificationUpdatedEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * @property int            $id
@@ -14,14 +18,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Notification extends NsModel
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'nexopos_notifications';
+
+    protected $dispatchesEvents = [
+        'created' => NotificationCreatedEvent::class,
+        'updated' => NotificationUpdatedEvent::class,
+    ];
 
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting( function ( $notification ) {
+            NotificationDeletedEvent::dispatch( $notification->toArray() );
+        } );
+    }
 
     public function user()
     {

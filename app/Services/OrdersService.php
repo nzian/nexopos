@@ -49,6 +49,7 @@ use App\Models\Product;
 use App\Models\ProductHistory;
 use App\Models\ProductSubItem;
 use App\Models\ProductUnitQuantity;
+use App\Models\Register;
 use App\Models\Role;
 use App\Models\Unit;
 use Carbon\Carbon;
@@ -262,17 +263,19 @@ class OrdersService
                         ->whereNotIn( 'id', $tracked )
                         ->first();
 
-                    /**
-                     * We keep a reference to avoid
-                     * having to track that twice.
-                     */
-                    $tracked[] = $payment->id;
+                    if ( $payment instanceof OrderPayment ) {
+                        /**
+                         * We keep a reference to avoid
+                         * having to track that twice.
+                         */
+                        $tracked[] = $payment->id;
 
-                    /**
-                     * let's attach the payment
-                     * id to the instalment.
-                     */
-                    $newInstalment->payment_id = $payment->id ?? null;
+                        /**
+                         * let's attach the payment
+                         * id to the instalment.
+                         */
+                        $newInstalment->payment_id = $payment->id ?? null;
+                    }
                 }
 
                 $newInstalment->amount = $instalment[ 'amount' ];
@@ -314,7 +317,7 @@ class OrdersService
                  * if the minimal provided
                  * amount thoses match the required amount.
                  */
-                if ( $minimal > Currency::raw( $fields[ 'tendered' ] ) ) {
+                if ( $minimal > Currency::raw( $fields[ 'tendered' ] ) && ns()->option->get( 'ns_orders_allow_unpaid' ) === 'no' ) {
                     throw new NotAllowedException(
                         sprintf(
                             __( 'The minimal payment of %s has\'nt been provided.' ),
@@ -799,9 +802,22 @@ class OrdersService
         }
 
         /**
-         * We should check if the order allow instalments.
+         * We want to prevent making payment on register that are closed.
+         * if the cash regsiter feature is enabled.
          */
-        if ( $order->instalments->count() > 0 && $order->support_instalments ) {
+        if ( ns()->option->get( 'ns_pos_registers_enabled', 'no' ) === 'yes' && isset( $payment[ 'register_id' ] ) ) {
+            $register = Register::opened()->where( 'id', $payment[ 'register_id' ] )->count();
+
+            if ( $register === 0 ) {
+                throw new NotAllowedException( __( 'Unable to make a payment on a closed cash register.' ) );
+            }
+        }
+
+        /**
+         * We should check if the order allow instalments. This is only done if
+         * we've enabled strict instalments.
+         */
+        if ( $order->instalments->count() > 0 && $order->support_instalments && ns()->option->get( 'ns_orders_strict_instalments', 'no' ) === true ) {
             $paymentToday = $order->instalments()
                 ->where( 'paid', false )
                 ->where( 'date', '>=', ns()->date->copy()->startOfDay()->toDateTimeString() )
@@ -819,6 +835,8 @@ class OrdersService
          * let's refresh the order to check whether the
          * payment has made the order complete or not.
          */
+        $order->register_id = $payment[ 'register_id' ];
+        $order->save();
         $order->refresh();
 
         $this->refreshOrder( $order );
@@ -838,7 +856,7 @@ class OrdersService
      */
     private function __saveOrderSinglePayment( $payment, Order $order ): OrderPayment
     {
-        event( new OrderBeforePaymentCreatedEvent( $payment, $order->customer ) );
+        OrderBeforePaymentCreatedEvent::dispatch( $payment, $order->customer );
 
         $orderPayment = isset( $payment[ 'id' ] ) ? OrderPayment::find( $payment[ 'id' ] ) : false;
 
@@ -923,8 +941,8 @@ class OrdersService
         } )->sum() )->toFloat();
 
         $total = $this->currencyService->define(
-                $subtotal + $this->__getShippingFee( $fields )
-            )
+            $subtotal + $this->__getShippingFee( $fields )
+        )
             ->subtractBy( ( $fields[ 'discount' ] ?? $this->computeDiscountValues( $fields[ 'discount_percentage' ] ?? 0, $subtotal ) ) )
             ->subtractBy( $this->__computeOrderCoupons( $fields, $subtotal ) )
             ->toFloat();
@@ -1034,13 +1052,13 @@ class OrdersService
          * increase the total with the
          * shipping fees and subtract the discounts
          */
-        $order->total = Currency::define( $order->subtotal )
+        $order->total = Currency::fresh( $order->subtotal )
             ->additionateBy( $order->shipping )
             ->additionateBy(
                 ( $order->tax_type === 'exclusive' ? $order->tax_value : 0 )
             )
             ->subtractBy(
-                Currency::define( $order->total_coupons )
+                Currency::fresh( $order->total_coupons )
                     ->additionateBy( $order->discount )
                     ->toFloat()
             )
@@ -1051,7 +1069,7 @@ class OrdersService
         /**
          * compute change
          */
-        $order->change = Currency::define( $order->tendered )
+        $order->change = Currency::fresh( $order->tendered )
             ->subtractBy( $order->total )
             ->toFloat();
 
@@ -1060,7 +1078,7 @@ class OrdersService
          *
          * @todo not accurate
          */
-        $order->total_without_tax = Currency::define( $order->subtotal )
+        $order->total_without_tax = Currency::fresh( $order->subtotal )
             ->subtractBy( $order->discount )
             ->subtractBy( $order->total_coupons )
             ->subtractBy( $order->tax_value )
@@ -1151,14 +1169,14 @@ class OrdersService
 
             if ( $product[ 'product' ] instanceof Product ) {
                 $orderProduct->total_purchase_price = $this->currencyService->define(
-                    $product[ 'total_purchase_price' ] ?? Currency::define( $this->productService->getCogs(
+                    $product[ 'total_purchase_price' ] ?? Currency::fresh( $this->productService->getCogs(
                         product: $product[ 'product' ],
                         unit: $unit
                     ) )
-                    ->multipliedBy( $product[ 'quantity' ] )
-                    ->toFloat()
+                        ->multipliedBy( $product[ 'quantity' ] )
+                        ->toFloat()
                 )
-                ->toFloat();
+                    ->toFloat();
             }
 
             $this->computeOrderProduct( $orderProduct );
@@ -1431,7 +1449,7 @@ class OrdersService
             isset( $fields[ 'discount_type' ] ) &&
             $fields[ 'discount_type' ] === 'percentage' ) {
 
-            $fields[ 'discount' ] = ( $fields[ 'discount' ] ?? 
+            $fields[ 'discount' ] = ( $fields[ 'discount' ] ??
                 ns()->currency->define(
                     ns()->currency->define(
                         ns()->currency->define( $sale_price )->multiplyBy( $fields[ 'discount_percentage' ] )->toFloat()
@@ -1454,8 +1472,8 @@ class OrdersService
                     price: $sale_price
                 )
             )
-            ->multiplyBy( floatval( $fields[ 'quantity' ] ) )
-            ->toFloat();
+                ->multiplyBy( floatval( $fields[ 'quantity' ] ) )
+                ->toFloat();
         }
 
         /**
@@ -1631,7 +1649,7 @@ class OrdersService
         $fields[ 'discount' ] = $fields[ 'discount' ] ?? $order->discount ?? 0;
 
         if ( ! empty( $fields[ 'discount_type' ] ) && ! empty( $fields[ 'discount_percentage' ] ) && $fields[ 'discount_type' ] === 'percentage' ) {
-            return $this->currencyService->define( 
+            return $this->currencyService->define(
                 ns()->currency->define( $fields[ 'subtotal' ] )->multiplyBy( $fields[ 'discount_percentage' ] )->toFloat()
             )->dividedBy( 100 )->toFloat();
         } else {
@@ -1872,7 +1890,7 @@ class OrdersService
         $productRefund->total_price = $this->currencyService
             ->define( $productRefund->unit_price )->multipliedBy( $details[ 'quantity' ] )
             ->toFloat();
-      
+
         $productRefund->quantity = $details[ 'quantity' ];
         $productRefund->author = Auth::id();
         $productRefund->order_id = $order->id;
@@ -1961,7 +1979,7 @@ class OrdersService
     public function computeDiscountValues( $rate, $value )
     {
         if ( $rate > 0 ) {
-            return ns()->currency->define( 
+            return ns()->currency->define(
                 ns()->currency->define( $value )->multiplyBy( $rate )->toFloat()
             )->divideBy( 100 )->toFloat();
         }
@@ -2146,11 +2164,11 @@ class OrdersService
         /**
          * let's refresh all the order values
          */
-        $order->subtotal = Currency::define( $productTotal )->toFloat();
+        $order->subtotal = Currency::raw( $productTotal );
         $order->total_without_tax = $productPriceWithoutTax;
         $order->total_with_tax = $productPriceWithTax;
         $order->discount = $this->computeOrderDiscount( $order );
-        $order->total = Currency::define( $order->subtotal )
+        $order->total = Currency::fresh( $order->subtotal )
             ->additionateBy( $orderShipping )
             ->additionateBy(
                 ( $order->tax_type === 'exclusive' ? $order->tax_value : 0 )
@@ -2162,7 +2180,7 @@ class OrdersService
             )
             ->toFloat();
 
-        $order->change = Currency::define( $order->tendered )->subtractBy( $order->total )->toFloat();
+        $order->change = Currency::fresh( $order->tendered )->subtractBy( $order->total )->toFloat();
 
         $refunds = $order->refunds;
 
@@ -2267,7 +2285,7 @@ class OrdersService
         $orderArray = $order->toArray();
         $order->delete();
 
-        OrderAfterDeletedEvent::dispatch( ( object ) $orderArray );
+        OrderAfterDeletedEvent::dispatch( (object) $orderArray );
 
         return [
             'status' => 'success',
@@ -2670,10 +2688,10 @@ class OrdersService
      */
     public function getSoldStock( $startDate, $endDate, $categories = [], $units = [] )
     {
-        $selectedColumns    =   [ 'product_id', 'name', 'unit_name', 'unit_price', 'quantity', 'total_purchase_price', 'tax_value', 'total_price' ];
-        $groupColumns    =   [ 'product_id', 'unit_id', 'name', 'unit_name' ];
-        $selectedColumns    =   [ 
-            ...$groupColumns, 
+        $selectedColumns = [ 'product_id', 'name', 'unit_name', 'unit_price', 'quantity', 'total_purchase_price', 'tax_value', 'total_price' ];
+        $groupColumns = [ 'product_id', 'unit_id', 'name', 'unit_name' ];
+        $selectedColumns = [
+            ...$groupColumns,
             DB::raw( 'SUM(quantity) as quantity' ),
             DB::raw( 'SUM(tax_value) as tax_value' ),
             DB::raw( 'SUM(total_purchase_price) as total_purchase_price' ),
@@ -2685,10 +2703,10 @@ class OrdersService
         $products = OrderProduct::whereHas( 'order', function ( Builder $query ) {
             $query->where( 'payment_status', Order::PAYMENT_PAID );
         } )
-        ->select( $selectedColumns )
-        ->groupByRaw( join( ', ', $groupColumns ) )
-        ->where( 'created_at', '>=', $rangeStarts )
-        ->where( 'created_at', '<=', $rangeEnds );
+            ->select( $selectedColumns )
+            ->groupByRaw( implode( ', ', $groupColumns ) )
+            ->where( 'created_at', '>=', $rangeStarts )
+            ->where( 'created_at', '<=', $rangeEnds );
 
         if ( ! empty( $categories ) ) {
             $products->whereIn( 'product_category_id', $categories );
@@ -2851,11 +2869,11 @@ class OrdersService
     {
         $totalInstalment = $order->instalments->map( fn( $instalment ) => $instalment->amount )->sum();
 
-        if ( Currency::define( $fields[ 'amount' ] )->toFloat() <= 0 ) {
+        if ( Currency::raw( $fields[ 'amount' ] ) <= 0 ) {
             throw new NotAllowedException( __( 'The defined amount is not valid.' ) );
         }
 
-        if ( Currency::define( $totalInstalment )->toFloat() >= $order->total ) {
+        if ( Currency::raw( $totalInstalment ) >= $order->total ) {
             throw new NotAllowedException( __( 'No further instalments is allowed for this order. The total instalment already covers the order total.' ) );
         }
 

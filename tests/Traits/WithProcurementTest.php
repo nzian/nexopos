@@ -4,11 +4,11 @@ namespace Tests\Traits;
 
 use App\Classes\Currency;
 use App\Models\Procurement;
+use App\Models\ProcurementProduct;
 use App\Models\Product;
 use App\Models\ProductHistory;
 use App\Models\Provider;
 use App\Models\TaxGroup;
-use App\Models\Transaction;
 use App\Models\TransactionHistory;
 use App\Models\Unit;
 use App\Models\UnitGroup;
@@ -147,6 +147,12 @@ trait WithProcurementTest
         $this->assertSame( (float) $existingExpense[ 'value' ], (float) $responseData[ 'data' ][ 'procurement' ][ 'cost' ], __( 'The attached procurement value doesn\'t match the transaction value.' ) );
 
         $response->assertJson( [ 'status' => 'success' ] );
+
+        /**
+         * We'll compute all the sale value of the procured product
+         * and compare it with the sale value defined on the procurements.
+         */
+        $products = ProcurementProduct::where( 'procurement_id', $responseData[ 'data' ][ 'procurement' ][ 'id' ] )->get();
 
         /**
          * We'll check if the expense value

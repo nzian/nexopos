@@ -2,11 +2,7 @@
 
 namespace App\Services;
 
-use App\Events\NotificationCreatedEvent;
-use App\Events\NotificationDeletedEvent;
-use App\Events\NotificationDispatchedEvent;
 use App\Models\Notification;
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Exception;
@@ -59,17 +55,17 @@ class NotificationService
      */
     public function dispatchForPermissions( array $permissions ): void
     {
-        $roles = Role::whereHas('permissions', function ($query) use ($permissions) {
-            $query->whereIn('namespace', $permissions);
-        })->get();
-    
-        $uniqueRoles = $roles->unique('id');
-    
-        if ($uniqueRoles->isEmpty()) {
-            Log::alert('A notification was dispatched for permissions that aren\'t assigned.', $permissions);
+        $roles = Role::whereHas( 'permissions', function ( $query ) use ( $permissions ) {
+            $query->whereIn( 'namespace', $permissions );
+        } )->get();
+
+        $uniqueRoles = $roles->unique( 'id' );
+
+        if ( $uniqueRoles->isEmpty() ) {
+            Log::alert( 'A notification was dispatched for permissions that aren\'t assigned.', $permissions );
         }
-    
-        $this->dispatchForGroup($uniqueRoles);
+
+        $this->dispatchForGroup( $uniqueRoles );
     }
 
     /**
@@ -97,8 +93,6 @@ class NotificationService
                 $this->__makeNotificationFor( $user );
             } );
         }
-
-        NotificationCreatedEvent::dispatch();
     }
 
     /**
@@ -139,8 +133,6 @@ class NotificationService
             $this->notification->url = $this->url;
             $this->notification->save();
         }
-
-        NotificationDispatchedEvent::dispatch( $this->notification );
     }
 
     public function dispatchForUsers( Collection $users )
@@ -166,18 +158,14 @@ class NotificationService
         Notification::identifiedBy( $identifier )
             ->get()
             ->each( function ( $notification ) {
-                NotificationDeletedEvent::dispatch( $notification );
-                $this->proceedDeleteNotification( $notification );
+                $notification->delete();
             } );
     }
 
     public function deleteSingleNotification( $id )
     {
         $notification = Notification::find( $id );
-
-        NotificationDeletedEvent::dispatch( $notification );
-
-        $this->proceedDeleteNotification( $notification );
+        $notification->delete();
     }
 
     public function deleteNotificationsFor( User $user )
@@ -185,21 +173,7 @@ class NotificationService
         Notification::for( $user->id )
             ->get()
             ->each( function ( $notification ) {
-                NotificationDeletedEvent::dispatch( $notification );
-
-                $this->proceedDeleteNotification( $notification );
+                $notification->delete();
             } );
-    }
-
-    /**
-     * Deletes a notification if the socket are disabled
-     *
-     * @return void
-     */
-    public function proceedDeleteNotification( Notification $notification )
-    {
-        if ( ! env( 'NS_SOCKET_ENABLED', false ) ) {
-            $notification->delete();
-        }
     }
 }

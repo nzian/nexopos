@@ -15,7 +15,7 @@
         <div class="flex flex-col overflow-y-auto h-120">
             <template v-for="history of cashRegisterReport.history">
                 <div :key="history.id" v-if="[ 'register-sale' ].includes( history.action )"  class="flex border-b elevation-surface success">
-                    <div class="p-2 flex-auto">{{ history.description }}</div>
+                    <div class="p-2 flex-auto">{{ history.label }}</div>
                     <div class="flex-auto text-right p-2">{{ nsCurrency( history.value ) }}</div>
                 </div>
                 <div :key="history.id" v-if="[ 'register-cash-in' ].includes( history.action )"  class="flex border-b elevation-surface success">
@@ -38,7 +38,7 @@
                 </div>
                 <div :key="history.id" v-if="[ 'register-refund', 'register-cash-out' ].includes( history.action )"  class="flex border-b elevation-surface error">
                     <div class="p-2 flex-auto">
-                        <div>{{ history.description }}</div>
+                        <div>{{ history.description || __( 'Not Provided' ) }}</div>
                         <div class="flex md:-mx-1">
                             <div class="px-1 text-xs text-secondary"><strong>{{ __( 'Type' ) }}</strong>: {{ history.label }}</div>
                             <div class="px-1 text-xs text-secondary"><strong>{{ __( 'Account' ) }}</strong>: {{ history.account_name }}</div>
@@ -52,6 +52,12 @@
             <div class="flex border-b elevation-surface" :class="summary.color" v-for="summary of cashRegisterReport.summary">
                 <div class="p-2 flex-auto">{{ summary.label }}</div>
                 <div class="flex-auto text-right p-2">{{ nsCurrency( summary.value ) }}</div>
+            </div>
+        </div>
+        <div class="flex justify-between p-2">
+            <div></div>
+            <div>
+                <ns-button @click="printZReport( )" type="info">{{ __( 'Print Z-Report' ) }}</ns-button>
             </div>
         </div>
     </div>
@@ -92,6 +98,10 @@ export default {
             this.popupResolver({
                 status: 'success'
             });
+        },
+
+        printZReport() {
+            POS.print.process( this.settings.register.id, 'z-report' );
         },
 
         getHistory() {

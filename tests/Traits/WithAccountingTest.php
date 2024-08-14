@@ -6,7 +6,6 @@ use App\Classes\Currency;
 use App\Models\ActiveTransactionHistory;
 use App\Models\DashboardDay;
 use App\Models\Procurement;
-use App\Models\Transaction;
 use App\Models\TransactionAccount;
 use App\Models\TransactionHistory;
 use App\Services\ReportService;
@@ -48,7 +47,7 @@ trait WithAccountingTest
                 'operation' => TransactionHistory::OPERATION_CREDIT,
             ], [
                 'name' => __( 'Cash Register (cash-in)' ),
-                'account' => TransactionHistory::ACCOUNT_REGISTER_CASHIN,
+                'account' => TransactionHistory::ACCOUNT_REGISTER_CASHING,
                 'operation' => TransactionHistory::OPERATION_CREDIT,
             ], [
                 'name' => __( 'Cash Register (cash-out)' ),
@@ -80,6 +79,7 @@ trait WithAccountingTest
                         'general' => [
                             'operation' => $account[ 'operation' ],
                             'author' => Auth::id(),
+                            'counter_account_id' => 0,
                             'account' => $account[ 'account' ],
                         ],
                     ] );
