@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Option;
+use App\Models\PaymentType;
 
 class Options
 {
@@ -39,6 +40,7 @@ class Options
             'ns_pos_hide_empty_categories' => 'yes',
             'ns_pos_unit_price_ediable' => 'yes',
             'ns_pos_order_types' => [ 'takeaway', 'delivery' ],
+            'ns_pos_registers_default_change_payment_type' => PaymentType::where( 'identifier', 'cash-payment' )->first()?->id ?? 1,
         ];
 
         $options = array_merge( $defaultOptions, $options );
@@ -66,9 +68,26 @@ class Options
      **/
     public function build()
     {
-        $this->options = [];
-
         if ( Helper::installed() && empty( $this->rawOptions ) ) {
+            $this->rawOptions = $this->option()
+                ->get()
+                ->mapWithKeys( function ( $option ) {
+                    return [
+                        $option->key => $option,
+                    ];
+                } );
+        }
+    }
+
+    /**
+     * Rebuild the options to ensure having
+     * on the rawOptions the latest options.
+     *
+     * @return void
+     **/
+    public function rebuild()
+    {
+        if ( Helper::installed() ) {
             $this->rawOptions = $this->option()
                 ->get()
                 ->mapWithKeys( function ( $option ) {
@@ -89,65 +108,25 @@ class Options
      **/
     public function set( $key, $value, $expiration = null )
     {
-        /**
-         * if an option has been found,
-         * it will save the new value and update
-         * the option object.
-         */
-        $foundOption = collect( $this->rawOptions )->map( function ( $option, $index ) use ( $value, $key, $expiration ) {
-            if ( $key === $index ) {
-                $this->hasFound = true;
+        if ( isset( $this->rawOptions[ $key ] ) ) {
+            $this->rawOptions[ $key ]->value = $value;
+            $this->rawOptions[ $key ]->expire_on = $expiration;
 
-                $this->encodeOptionValue( $option, $value );
+            $this->encodeOptionValue( $this->rawOptions[ $key ], $value );
 
-                $option->expire_on = $expiration;
-
-                /**
-                 * this should be overridable
-                 * from a user option or any
-                 * extending this class
-                 */
-                $option = $this->beforeSave( $option );
-                $option->save();
-
-                return $option;
-            }
-
-            return false;
-        } )
-            ->filter();
-
-        /**
-         * if the option hasn't been found
-         * it will create a new Option model
-         * and store with, then save it on the option model
-         */
-        if ( $foundOption->isEmpty() ) {
+            $this->rawOptions[ $key ]->save();
+        } else {
             $option = new Option;
             $option->key = trim( strtolower( $key ) );
             $option->array = false;
+            $option->value = $value;
+            $option->expire_on = $expiration;
 
             $this->encodeOptionValue( $option, $value );
 
-            $option->expire_on = $expiration;
-
-            /**
-             * this should be overridable
-             * from a user option or any
-             * extending this class
-             */
-            $option = $this->beforeSave( $option );
             $option->save();
-        } else {
-            $option = $foundOption->first();
+            $this->rawOptions[ $key ] = $option;
         }
-
-        /**
-         * Let's save the new option
-         */
-        $this->rawOptions[ $key ] = $option;
-
-        return $option;
     }
 
     /**
@@ -163,26 +142,26 @@ class Options
         } else {
             $option->value = $value;
         }
+
+        $this->sanitizeValue( $option );
     }
 
     /**
      * Sanitizes values before storing on the database.
      */
-    public function beforeSave( Option $option )
+    public function sanitizeValue( Option $option )
     {
         /**
          * sanitizing input to remove
          * all script tags
          */
         $option->value = strip_tags( $option->value );
-
-        return $option;
     }
 
     /**
      * Get options
      **/
-    public function get( ?string $key = null, mixed $default = null )
+    public function get( string | array $key = null, mixed $default = null )
     {
         if ( $key === null ) {
             return $this->rawOptions;

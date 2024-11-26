@@ -171,6 +171,30 @@ export default {
                         option.label            =   referenceOption.label.replace( '{day}', this.recurrence[1].value >= 0 && this.recurrence[1].value <= 1 ? `${this.recurrence[1].value} day` : `${this.recurrence[1].value} days` );
                     } else if ([ 'on_specific_day' ].includes( option.value ) ) {
                         option.label            =   referenceOption.label.replace( '{day}', this.ordinalSuffix( this.recurrence[1].value ) );
+                    } else if ([ 'every_x_minutes' ].includes( option.value ) ) {
+                        option.label            =   referenceOption.label.replace( 
+                            '{minutes}', (
+                                this.recurrence[1].value >= 0 && this.recurrence[1].value <= 1 ? 
+                                    __( `{minutes} minute` ).replace( '{minutes}', this.recurrence[1].value ) : 
+                                    __( `{minutes} minutes` ).replace( '{minutes}', this.recurrence[1].value )
+                            )
+                        );
+                    } else if ([ 'every_x_hours' ].includes( option.value ) ) {
+                        option.label            =   referenceOption.label.replace( 
+                            '{hours}', (
+                                this.recurrence[1].value >= 0 && this.recurrence[1].value <= 1 ? 
+                                    __( `{hours} hour` ).replace( '{hours}', this.recurrence[1].value ) : 
+                                    __( `{hours} hours` ).replace( '{hours}', this.recurrence[1].value )
+                            )
+                        );
+                    } else if ([ 'every_x_days' ].includes( option.value ) ) {
+                        option.label            =   referenceOption.label.replace( 
+                            '{days}', (
+                                this.recurrence[1].value >= 0 && this.recurrence[1].value <= 1 ? 
+                                    __( `{days} day` ).replace( '{days}', this.recurrence[1].value ) : 
+                                    __( `{days} days` ).replace( '{days}', this.recurrence[1].value )
+                            )
+                        );
                     }
 
                     return option;
@@ -208,7 +232,7 @@ export default {
              * for the expense we know supports
              * recurring behavior
              */
-            if ( [ 'ns.recurring-transaction', 'ns.salary-transaction' ].includes( this.selectedConfiguration.identifier ) ) {
+            if ( [ 'ns.recurring-transaction', 'ns.entity-transaction' ].includes( this.selectedConfiguration.identifier ) ) {
                 tabs.push({
                     label: __( 'Conditions' ),
                     identifier: 'recurrence'
@@ -263,7 +287,7 @@ export default {
              */
             result.fields.forEach( field => {
                 if ( field.name === 'recurring' ) {
-                    if ([ 'ns.recurring-transaction', 'ns.salary-transaction' ].includes( result.identifier ) ) {
+                    if ([ 'ns.recurring-transaction', 'ns.entity-transaction' ].includes( result.identifier ) ) {
                         field.value =   true;
                     } else {
                         field.value =   false;

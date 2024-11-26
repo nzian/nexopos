@@ -69,34 +69,17 @@ class ModulesController extends DashboardController
             case 'disabled':
                 $list = $this->modules->getDisabled();
                 break;
+            case 'invalid':
+                $list = $this->modules->getInvalid();
+                break;
         }
 
         return [
             'modules' => $list,
             'total_enabled' => count( $this->modules->getEnabled() ),
             'total_disabled' => count( $this->modules->getDisabled() ),
+            'total_invalid' =>  count( $this->modules->getInvalid() ),
         ];
-    }
-
-    /**
-     * Performs a single migration file for a specific module
-     *
-     * @param string module namespace
-     * @return Request $request
-     * @return array   response
-     *
-     * @deprecated
-     */
-    public function migrate( $namespace, Request $request )
-    {
-        $module = $this->modules->get( $namespace );
-        $result = $this->modules->runMigration( $module[ 'namespace' ], $request->input( 'version' ), $request->input( 'file' ) );
-
-        if ( $result[ 'status' ] === 'error' ) {
-            throw new Exception( $result[ 'message' ] );
-        }
-
-        return $result;
     }
 
     /**

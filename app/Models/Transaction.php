@@ -32,7 +32,7 @@ class Transaction extends NsModel
     protected $casts = [
         'recurring' => 'boolean',
         'occurrence_value' => 'integer',
-        'active' => 'boolean',
+        // 'active' => 'boolean',
     ];
 
     const OCCURRENCE_START_OF_MONTH = 'month_starts';
@@ -47,6 +47,12 @@ class Transaction extends NsModel
 
     const OCCURRENCE_X_BEFORE_MONTH_ENDS = 'x_before_month_ends';
 
+    const OCCURRENCE_EVERY_X_DAYS = 'every_x_days';
+
+    const OCCURRENCE_EVERY_X_HOURS = 'every_x_hours';
+
+    const OCCURRENCE_EVERY_X_MINUTES = 'every_x_minutes';
+
     const TYPE_SCHEDULED = 'ns.scheduled-transaction';
 
     const TYPE_RECURRING = 'ns.recurring-transaction';
@@ -54,6 +60,8 @@ class Transaction extends NsModel
     const TYPE_ENTITY = 'ns.entity-transaction';
 
     const TYPE_DIRECT = 'ns.direct-transaction';
+
+    const TYPE_INDIRECT = 'ns.indirect-transaction';
 
     protected static function boot()
     {
