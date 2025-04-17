@@ -37,6 +37,7 @@ class ResetService
             'nexopos_transactions_histories',
             'nexopos_transactions_balance_days',
             'nexopos_transactions_balance_months',
+            'nexopos_transactions_actions_rules',
 
             'nexopos_medias',
             'nexopos_notifications',
@@ -89,10 +90,15 @@ class ResetService
         }
 
         /**
+         * @var CustomerService $customerService
+         */
+        $customerService = app()->make( CustomerService::class );
+
+        /**
          * Customers stills needs to be cleared
          * so we'll remove them manually.
          */
-        Customer::get()->each( fn( $customer ) => app()->make( CustomerService::class )->delete( $customer ) );
+        Customer::get()->each( fn( $customer ) => $customerService->delete( $customer ) );
 
         /**
          * We'll delete all options where key starts with "ns_"

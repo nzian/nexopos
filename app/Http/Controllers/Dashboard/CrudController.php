@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @todo review for api-server
  */
@@ -63,8 +64,6 @@ class CrudController extends DashboardController
                 return $response;
             }
         }
-
-        $resource->handleDependencyForDeletion( $model );
 
         $model->delete();
 
@@ -410,7 +409,7 @@ class CrudController extends DashboardController
         $writer->save( $fileName );
 
         /**
-         * We'll hide the asset URL behind random lettes
+         * We'll hide the asset URL behind random letters
          */
         $hash = Str::random( 20 );
 

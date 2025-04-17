@@ -718,7 +718,6 @@ class ModulesService
 
         $path = $file->store( '', [ 'disk' => 'ns-modules-temp' ] );
 
-        $fileInfo = pathinfo( $file->getClientOriginalName() );
         $fullPath = Storage::disk( 'ns-modules-temp' )->path( $path );
         $extractionFolderName = Str::uuid();
         $dir = dirname( $fullPath );
@@ -741,7 +740,6 @@ class ModulesService
 
         $directoryName = pathinfo( $directory[0] )[ 'basename' ];
         $rawFiles = Storage::disk( 'ns-modules-temp' )->allFiles( $extractionFolderName );
-        $module = [];
 
         /**
          * Just retrieve the files name
@@ -782,17 +780,21 @@ class ModulesService
              * Check if a similar module already exists
              * and if the new module is outdated
              */
-            if ( $module = $this->get( $moduleNamespace ) ) {
-                if ( version_compare( $module[ 'version' ], $moduleVersion, '>=' ) ) {
+            if ( $existingModule = $this->get( $moduleNamespace ) ) {
+                if ( version_compare( $existingModule[ 'version' ], $moduleVersion, '>=' ) ) {
                     /**
                      * We're dealing with old module
                      */
                     $this->clearTemporaryFiles();
 
                     return [
-                        'status' => 'danger',
-                        'message' => __( 'Unable to upload this module as it\'s older than the version installed' ),
-                        'module' => $module,
+                        'status' => 'error',
+                        'message' => sprintf(
+                            __( 'Unable to upload this module as it\'s older (%s) than the version installed (%s)' ),
+                            $xml->version,
+                            $existingModule[ 'version' ],
+                        ),
+                        'module' => $existingModule,
                     ];
                 }
 
@@ -835,12 +837,6 @@ class ModulesService
             Cache::forget( self::CACHE_MIGRATION_LABEL . $moduleNamespace );
 
             /**
-             * create a symlink directory
-             * only if the module has that folder
-             */
-            $this->createSymLink( $moduleNamespace );
-
-            /**
              * We needs to load all modules, to ensure
              * the new uploaded module is recognized
              */
@@ -852,7 +848,15 @@ class ModulesService
              */
             $this->runAllMigration( $moduleNamespace );
 
+            $this->createSymLink( $moduleNamespace );
+
             $module = $this->get( $moduleNamespace );
+
+            /**
+             * @step 4: set right file permissions
+             * to the uploaded module and set symlink
+             */
+            $this->setFilePermissions( $module );
 
             $this->clearTemporaryFiles();
 
@@ -871,6 +875,17 @@ class ModulesService
                 'message' => __( 'The uploaded file is not a valid module.' ),
             ];
         }
+    }
+
+    public function setFilePermissions( array $module )
+    {
+        $modulePath = base_path( 'modules' ) . DIRECTORY_SEPARATOR . $module['namespace'];
+
+        // Apply 755 permissions to directories
+        exec( "find $modulePath -type d -exec chmod 755 {} +" );
+
+        // Apply 644 permissions to files
+        exec( "find $modulePath -type f -exec chmod 644 {} +" );
     }
 
     /**
@@ -1046,7 +1061,7 @@ class ModulesService
          * This module can't be found. then return an error
          */
         return [
-            'status' => 'danger',
+            'status' => 'error',
             'message' => sprintf( __( 'Unable to locate a module having as identifier "%s".' ), $namespace ),
             'code' => 'unknow_module',
         ];
