@@ -50,24 +50,24 @@
                 <table class="table ns-table w-full" v-if="Object.values( columns ).length > 0">
                     <thead>
                         <tr>
-                            <th v-if="showCheckboxes" class="text-center px-2 border w-16 py-2">
+                            <th v-if="showCheckboxes" class="text-center px-2 border w-16 py-2 bg-custome table-header-text">
                                 <ns-checkbox :checked="globallyChecked" @change="handleGlobalChange( $event )"></ns-checkbox>
                             </th>
-                            <th v-if="prependOptions && showOptions" class="text-left px-2 py-2 w-16 border"></th>
+                            <th v-if="prependOptions && showOptions" class="text-left px-2 py-2 w-16 border bg-custome table-header-text"></th>
                             <th :key="identifier" @click="sort( identifier )" v-for="(column, identifier) of columns" :style="{ 
                                 'width' : column.width || 'auto', 
                                 'max-width': column.maxWidth || 'auto', 
                                 'min-width': column.minWidth || 'auto' 
-                            }" class="cursor-pointer justify-betweenw-40 border text-left px-2 py-2">
+                            }" class="cursor-pointer justify-betweenw-40 border text-left px-2 py-2 bg-custome table-header-text">
                                 <div class="w-full flex justify-between items-center">
                                     <span class="flex">{{ column.label }}</span>
                                     <span class="h-6 w-6 flex justify-center items-center">
-                                        <i v-if="column.$direction === 'desc'" class="las la-sort-amount-up"></i>
+                                        <i v-if="column.$direction === 'desc'" class="las la-sort-amount-up "></i>
                                         <i v-if="column.$direction === 'asc'" class="las la-sort-amount-down"></i>
                                     </span>
                                 </div>
                             </th>
-                            <th v-if="!prependOptions && showOptions" class="text-left px-2 py-2 w-16 border"></th>
+                            <th v-if="!prependOptions && showOptions" class="text-left px-2 py-2 w-16 border bg-custome table-header-text"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,7 +107,7 @@
                             <i class="las la-angle-double-left"></i>
                         </a>
                         <template v-for="(_paginationPage, index) of pagination">
-                            <a :key="index" v-if="page !== '...'" :class="page == _paginationPage ? 'bg-info-tertiary border-transparent text-white' : ''" @click="page=_paginationPage;refresh()" href="javascript:void(0)" class="mx-1 flex items-center justify-center h-8 w-8 rounded-full ns-crud-button border">{{ _paginationPage }}</a>
+                            <a :key="index" v-if="page !== '...'" :class="page == _paginationPage ? 'bg-info-custome-blue border-transparent text-white' : ''" @click="page=_paginationPage;refresh()" href="javascript:void(0)" class="mx-1 flex items-center justify-center h-8 w-8 rounded-full ns-crud-button border">{{ _paginationPage }}</a>
                             <a :key="index" v-if="page === '...'" href="javascript:void(0)" class="mx-1 flex items-center justify-center h-8 w-8 rounded-full ns-crud-button border">...</a>
                         </template>
                         <a href="javascript:void(0)" @click="page=result.last_page;refresh()" class="mx-1 flex items-center justify-center h-8 w-8 rounded-full ns-crud-button border shadow">

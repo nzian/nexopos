@@ -9,23 +9,23 @@
 }
 
 #dashboard-aside > div {
-    @apply bg-gray-900;
+    @apply bg-custom-blue;
     .ns-aside-menu {
-        @apply text-gray-200 hover:bg-gray-700;
+        @apply text-gray-200 hover:bg-header-background-color hover:text-custom-blue !important;
         &.toggled {
-            @apply border-blue-800 bg-blue-800;
+            @apply border-custom-blue bg-custom-blue-2;
         }
         &.normal {
-            @apply border-transparent bg-gray-900;
+            @apply border-transparent bg-custom-blue;
         }
         .notification-label {
             @apply bg-red-600 text-white;
         }
     }
     .ns-aside-submenu {
-        @apply border-blue-800 bg-gray-800 hover:bg-gray-700;
+        @apply border-custom-blue bg-custom-blue-2 hover:bg-header-background-color hover:text-custom-blue !important ;
         &.active {
-            @apply text-white;
+            @apply text-custom-blue bg-header-background-color !important;
         }
         &.normal {
             @apply text-gray-100;
@@ -34,7 +34,11 @@
 }
 
 #dashboard-body {
-    @apply bg-surface;
+    @apply bg-custom-body;
+}
+
+#dashboard-header{
+    @apply bg-header-background-color;
 }
 
 .ns-toggle-button {

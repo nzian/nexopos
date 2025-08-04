@@ -28,10 +28,17 @@
             @apply bg-success-tertiary text-white border-table-th-edge;
         }
         tr.info > th, tr.info td {
-            @apply bg-info-tertiary text-white border-table-th-edge;
+            @apply bg-custom-blue text-white border-table-th-edge;
         }
         tr.warning > th, tr.warning td {
             @apply bg-warning-tertiary text-white border-table-th-edge;
+        }
+        .bg-custome
+        {
+            @apply bg-header-background-color;
+        }
+        .table-header-text{
+            @apply text-custom-blue font-medium;
         }
     }
     tbody, tfoot {
@@ -45,11 +52,11 @@
         }
     
         tr.error {
-            @apply bg-error-primary text-white;
+            @apply bg-custome-red-2 border-custome-red text-white;
         }
     
         tr.success {
-            @apply bg-success-primary text-white;
+            @apply bg-custome-green-2 text-white;
         }
     
         tr.warning {
@@ -59,7 +66,7 @@
         .ns-inset-button {
             @apply border-gray-300;
             &.active, &:hover {
-                @apply border-transparent;
+                @apply border-transparent bg-custom-blue ;
             }
         }
     }

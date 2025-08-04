@@ -38,7 +38,7 @@
             <div id="form-container" class="-mx-4 flex flex-wrap mt-4">
                 <div class="px-4 w-full">
                     <div id="tabbed-card" class="mb-8" :key="variation_index" v-for="(variation, variation_index) of form.variations">
-                        <div id="card-header" class="flex flex-wrap justify-between ns-tab ml-4">
+                        <div id="card-header" class="flex flex-wrap justify-between ns-tab">
                             <div class="flex flex-wrap">
                                 <template v-for="( tab, index ) in variation.tabs">
                                     <div @click="setTabActive( index, variation.tabs )" :class="tab.active ? 'active' : 'inactive'" v-if="tab.visible" v-bind:key="index" class="tab cursor-pointer text-primary px-4 py-2 rounded-tl-lg rounded-tr-lg flex justify-between">

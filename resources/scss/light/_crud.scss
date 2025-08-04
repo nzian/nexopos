@@ -2,18 +2,22 @@
  * Crud
 **/
 #crud-table {
-    @apply bg-box-background;
+    @apply bg-box-background ;
 
     #crud-table-header {
         @apply border-box-edge;
     }
 
     .ns-crud-input {
-        @apply bg-input-background border-input-edge;
+        @apply bg-header-background-color border-input-edge;
 
         input, select {
             @apply text-primary;
         }
+    }
+
+    .bg-info-custome-blue{
+        background-color: #014f86 !important;
     }
     
     .ns-table-row {
@@ -31,7 +35,7 @@
             @apply text-secondary;
 
             &:hover {
-                @apply bg-info-tertiary text-white;
+                @apply bg-custom-blue-2 text-white;
             }
 
             &:focus {
@@ -52,7 +56,7 @@
         }
 
         &:hover {
-            @apply border-transparent bg-info-tertiary text-white;
+            @apply border-transparent bg-custom-blue text-white;
             i, span {
                 @apply text-white;
             }

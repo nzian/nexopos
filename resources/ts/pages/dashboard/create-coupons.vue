@@ -177,7 +177,7 @@ export default {
                     </div>
                     <div class="px-4 w-full md:w-1/2">
                         <div id="tabbed-card">
-                            <div id="card-header" class="flex ml-4 flex-wrap ns-tab">
+                            <div id="card-header" class="flex flex-wrap ns-tab">
                                 <div @click="setTabActive( tab )" :class="tab.active ? 'active' : 'inactive'" v-for="( tab, index ) of validTabs" v-bind:key="index" class="tab cursor-pointer px-4 py-2 rounded-tl-lg rounded-tr-lg">
                                     {{ tab.label }}
                                 </div>

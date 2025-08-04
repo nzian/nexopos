@@ -1,4 +1,4 @@
-<div id="dashboard-header" class="w-full flex justify-between p-4">
+<div id="dashboard-header" class="w-full flex justify-between py-2 px-4 dashboard-header mb-4">
     <div class="flex items-center">
         <div>
             <div @click="toggleSideMenu()" class="rounded-full h-10 w-10 cursor-pointer font-bold text-2xl justify-center items-center flex border ns-toggle-button">
@@ -13,7 +13,7 @@
         <div class="px-2">
             <div @click="toggleMenu()" :class="menuToggled ? 'toggled shadow-lg rounded-t-lg' : 'untoggled rounded-lg'" class="
                 ns-avatar
-                w-32 md:w-56 flex flex-col border py-2 justify-center hover:border-opacity-0 cursor-pointer hover:shadow-lg">
+                w-32 md:w-56 flex flex-col border py-1 justify-center hover:border-opacity-0 cursor-pointer hover:shadow-lg">
                 <ns-avatar 
                     display-name="{{ Auth::user()->username }}"
                     url="{{ Auth::user()->attribute ? Auth::user()->attribute->avatar_link : asset( 'images/user.png' ) }}"></ns-avatar>

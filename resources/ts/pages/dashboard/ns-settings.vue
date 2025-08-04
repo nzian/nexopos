@@ -1,6 +1,6 @@
 <template>
     <div id="tabbed-card" class="ns-tab" v-if="formDefined">
-        <div id="card-header" class="flex flex-wrap ml-4">
+        <div id="card-header" class="flex flex-wrap">
             <div 
                 :class="tab.active ? 'active' : 'inactive'" 
                 v-for="( tab, key ) of form.tabs" 
