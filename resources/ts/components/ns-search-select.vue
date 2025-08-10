@@ -3,7 +3,7 @@
         <label :for="field.name" :class="hasError ? 'has-error' : 'is-pristine'" class="block leading-5 font-medium"><slot></slot></label>
         <div :class="( hasError ? 'has-error' : 'is-pristine' ) + ' ' + ( field.disabled ? 'cursor-not-allowed' : 'cursor-default' ) + ' ' + ( showResults ? 'rounded-t-md' : 'rounded-md')" 
             class="border-2 mt-1 relative shadow-sm mb-1 flex overflow-hidden">
-            <div @click="! field.disabled && (showResults = ! showResults)" :class="( field.disabled ? 'bg-input-disabled' : 'bg-input-background' )" 
+            <div @click="! field.disabled && (showResults = ! showResults)" :class="( field.disabled ? 'bg-input-disabled' : 'bg-white' )" 
                 class="flex-auto h-10 sm:leading-5 py-2 px-4 flex items-center">
                 <span class="text-primary text-sm">{{ selectedOptionLabel }}</span>
             </div>
@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="relative" v-if="showResults">
-            <div class="w-full overflow-hidden -top-[5px] border-r-2 border-l-2 border-t rounded-b-md border-b-2 border-input-edge bg-input-background shadow z-10 absolute">
+            <div class="w-full overflow-hidden -top-[5px] border-r-2 border-l-2 border-t rounded-b-md border-b-2 border-input-edge bg-white shadow z-10 absolute">
                 <div class="border-b border-input-edge border-dashed p-2">
                     <input @keypress.enter="selectFirstOption()" ref="searchInputField" v-model="searchField" type="text" :placeholder="__( 'Search result' )">
                 </div>

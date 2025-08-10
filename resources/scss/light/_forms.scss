@@ -3,7 +3,7 @@
 **/
 .ns-switch {
     button.selected {
-        @apply bg-info-tertiary text-white;
+        @apply bg-custom-blue text-white;
         &:hover {
             @apply bg-info-tertiary;
         }
@@ -29,12 +29,12 @@
     }
 
     &.info {
-        @apply border-info-tertiary;
+        @apply border-custom-blue;
         input {
-            @apply bg-input-background text-primary;
+            @apply bg-white text-primary;
         }
         button {
-            @apply bg-info-tertiary text-white;
+            @apply bg-custom-blue text-white;
             i, span {
                 @apply text-white;
             }
@@ -42,12 +42,12 @@
     }
 
     &.error {
-        @apply border-error-tertiary;
+        @apply border-custome-red;
         input {
-            @apply bg-input-background text-primary;
+            @apply bg-white text-primary;
         }
         button {
-            @apply bg-error-tertiary text-white;
+            @apply bg-custome-red text-white;
             i, span {
                 @apply text-white;
             }
@@ -55,12 +55,12 @@
     }
 
     &.warning {
-        @apply border-error-primary;
+        @apply border-custome-red;
         input {
             @apply bg-input-background text-primary;
         }
         button {
-            @apply bg-error-primary text-white;
+            @apply bg-custome-red text-white;
             i, span {
                 @apply text-white;
             }
@@ -83,9 +83,9 @@
 
 .ns-select {
     select {
-        @apply bg-input-background text-primary;
+        @apply bg-white text-primary;
         option {
-            @apply bg-input-background;
+            @apply bg-white;
             &:hover {
                 @apply bg-input-option-hover text-white;
             }
@@ -108,7 +108,7 @@
         }
     
         &.is-pristine {
-            @apply text-primary;
+            @apply text-gray-500;
         }
     }
 
@@ -116,9 +116,7 @@
         &.has-error {
             @apply border-error-secondary;
         }
-        &.is-pristine {
-            @apply border-input-edge;
-        }
+       
     }
 
     .leading {
@@ -126,7 +124,7 @@
     }
 
     input, textarea {
-        @apply text-primary outline-none bg-input-background border-input-edge;
+        @apply text-primary outline-none bg-white border-input-edge;
     }
 
     button {
@@ -183,7 +181,7 @@
         @apply text-error-secondary;
     }
     input {
-        @apply border-error-primary bg-error-secondary rounded;
+        @apply border-custome-red bg-error-secondary rounded;
     }
     p {
         @apply text-error-secondary;
@@ -208,7 +206,7 @@
     
     &.hover-success:hover, &.success {
         button, a {
-            @apply bg-success-tertiary text-white;
+            @apply bg-custome-success text-white;
 
             span.ns-label {
                 @apply bg-input-background text-success-primary;
@@ -228,7 +226,7 @@
     
     &.hover-warning:hover, &.warning {
         button, a {
-            @apply bg-warning-tertiary text-white;
+            @apply bg-custome-red text-white;
 
             span.ns-label {
                 @apply bg-input-background text-warning-secondary;
@@ -248,7 +246,7 @@
     
     &.hover-info:hover, &.info {
         button, a {
-            @apply bg-info-tertiary text-white;
+            @apply bg-custom-blue text-white;
 
             span.ns-label {
                 @apply bg-input-background text-info-tertiary;
@@ -283,7 +281,7 @@
         }
     }
     button.warning, a.warning {
-        @apply bg-warning-tertiary text-white;
+        @apply bg-custome-red text-white;
 
         span.ns-label {
             @apply bg-input-background text-warning-secondary;

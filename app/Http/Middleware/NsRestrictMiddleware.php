@@ -18,6 +18,7 @@ class NsRestrictMiddleware
      */
     public function handle( Request $request, Closure $next, $permission )
     {
+        
         if ( ns()->allowedTo( $permission ) ) {
             return $next( $request );
         }

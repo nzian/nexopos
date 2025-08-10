@@ -256,7 +256,7 @@ export default {
         <div v-if="Object.values( form ).length > 0" :class="popup ? 'p-2 overflow-y-auto' : ''">
             <div class="flex flex-col">
                 <div class="flex justify-between items-center" v-if="form.main">
-                    <label for="title" class="font-bold my-2 text-primary">
+                    <label for="title" class="font-bold my-2 text-gray-500">
                         <span v-if="form.main.name">{{ form.main.label }}</span>
                     </label>
                     <div for="title" class="text-sm my-2">
@@ -283,7 +283,7 @@ export default {
                 </template>
             </div>
             <div id="tabs-container" :class="popup ? 'mt-5' : 'my-5'" class="ns-tab" v-if="disableTabs !== 'true'">
-                <div class="header flex ml-4" style="margin-bottom: -1px;">
+                <div class="header flex" style="margin-bottom: -1px;">
                     <div :key="identifier" v-for="( tab , identifier ) of form.tabs" 
                         @click="toggle( identifier )" 
                         :class="tab.active ? 'active border border-b-transparent' : 'inactive border'" 

@@ -407,8 +407,8 @@ export default {
 }
 </script>
 <template>
-    <div class="flex md:flex-row flex-col ns-box shadow-xl overflow-hidden" id="ns-media" :class="isPopup ? 'w-6/7-screen h-6/7-screen' : 'w-full h-full'">
-        <div class="sidebar w-48 md:h-full flex-shrink-0">
+    <div class="flex md:flex-row flex-col ns-box shadow-xl overflow-hidden p-4" id="ns-media" :class="isPopup ? 'w-6/7-screen h-6/7-screen' : 'w-full h-full'">
+        <div class="sidebar w-48 md:h-full flex-shrink-0 bg-header-background-color mr-4">
             <h3 class="text-xl font-bold my-4 text-center">{{ __( 'Medias Manager' ) }}</h3>
             <ul class="sidebar-menus flex md:block mt-8">
                 <li @click="select( page )" v-for="(page,index) of pages" class="py-2 px-3 cursor-pointer border-l-8" :class="page.selected ? 'active' : ''" :key="index">{{ page.label }}</li>
@@ -448,7 +448,7 @@ export default {
             <div class="flex flex-auto overflow-hidden">
                 <div class="shadow ns-grid flex flex-auto flex-col">
                     <div class="p-2 border-b border-box-background">
-                        <div class="ns-input border-2 rounded border-input-edge bg-input-background flex">
+                        <div class="ns-input border-2 rounded border-input-edge bg-white flex">
                             <input id="search" type="text" v-model="searchField" :placeholder="__( 'Search Medias' )" class="px-4 block w-full sm:text-sm sm:leading-5 h-10">
                             <div class="flex items-center justify-center w-20 p-1" v-if="searchField.length > 0">
                                 <button @click="searchField = ''" class="h-full w-full rounded-tr rounded-br overflow-hidden">{{ __( 'Cancel' ) }}</button>

@@ -79,6 +79,14 @@ module.exports = {
         teal: colors.teal,
         orange: colors.orange,
         cyan: colors.cyan,
+        'custom-blue': '#014f86',
+        'custom-blue-2': 'rgb(7 89 146)',
+        'custom-body': 'rgb(227 234 244)',
+        'header-background-color': 'rgb(212 223 238)',
+        'custome-success': '#2E8A99',
+        'custome-red': '#c1121f',
+        'custome-red-2': '#FFCBCB',
+        'custome-green-2': '#E1F7F5',
         
         typography: withOpacityValue('--typography'),
         

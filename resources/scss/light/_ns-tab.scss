@@ -1,12 +1,12 @@
 .ns-tab {
     .tab {
-        @apply border-tab-active-border text-primary;
+        @apply border-tab-active-border text-custom-blue ;
         
         &.active {
             @apply bg-tab-active;
         }
         &.inactive {
-            @apply bg-tab-inactive;
+            @apply bg-header-background-color;
         }
     }
 }
